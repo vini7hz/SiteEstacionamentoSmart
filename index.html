@@ -1,993 +1,989 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full bg-slate-100">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Parking - Shopping Plaza</title>
-    <!-- Tailwind CSS -->
+    <title>Estádio Smart Parking - Estacionamento Inteligente</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Plus Jakarta Sans -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
-                    },
                     colors: {
                         brand: {
                             50: '#eff6ff',
                             100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
                             500: '#3b82f6',
                             600: '#2563eb',
                             700: '#1d4ed8',
+                            800: '#1e40af',
                             900: '#1e3a8a',
+                            950: '#0f172a'
                         }
                     }
                 }
             }
         }
     </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            user-select: none;
+            background-color: #eef2ff;
+            color: #0f172a;
             -webkit-tap-highlight-color: transparent;
-            background-color: #f1f5f9;
+        }
+        .mono-font {
+            font-family: 'Space Mono', monospace;
+        }
+        /* LED Overhead Ceiling Sensor Animations */
+        .sensor-glow-free {
+            filter: drop-shadow(0px 0px 6px #22c55e);
+            animation: pulse-green 2s infinite alternate;
+        }
+        .sensor-glow-occupied {
+            filter: drop-shadow(0px 0px 5px #ef4444);
+        }
+        .sensor-glow-pcd {
+            filter: drop-shadow(0px 0px 6px #06b6d4);
+        }
+        .sensor-glow-eletrico {
+            filter: drop-shadow(0px 0px 6px #8b5cf6);
         }
 
-        /* Route line animated dash flow */
-        @keyframes flowRoute {
-            from { stroke-dashoffset: 32; }
-            to { stroke-dashoffset: 0; }
+        @keyframes pulse-green {
+            0% { opacity: 0.8; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1.15); }
         }
 
+        /* Route Dash Effect */
         .animated-route-line {
-            stroke-dasharray: 10, 8;
-            animation: flowRoute 0.6s linear infinite;
+            stroke-dasharray: 8 6;
+            animation: dash 0.8s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -28; }
         }
 
-        /* Clean Architectural Parking Asphalt */
-        .parking-asphalt-light {
-            background-color: #f8fafc;
-            background-image: 
-                linear-gradient(rgba(203, 213, 225, 0.35) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(203, 213, 225, 0.35) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-
-        /* Pulsing LED Sensor effects */
-        @keyframes greenSensorGlow {
-            0%, 100% { box-shadow: 0 0 4px #10b981, 0 0 8px rgba(16, 185, 129, 0.4); transform: scale(1); }
-            50% { box-shadow: 0 0 10px #10b981, 0 0 16px rgba(16, 185, 129, 0.7); transform: scale(1.15); }
-        }
-
-        @keyframes amberSensorGlow {
-            0%, 100% { box-shadow: 0 0 4px #f59e0b, 0 0 10px rgba(245, 158, 11, 0.5); transform: scale(1); }
-            50% { box-shadow: 0 0 12px #f59e0b, 0 0 20px rgba(245, 158, 11, 0.8); transform: scale(1.2); }
-        }
-
-        .sensor-green-pulse {
-            animation: greenSensorGlow 1.6s infinite ease-in-out;
-        }
-
-        .sensor-amber-pulse {
-            animation: amberSensorGlow 1.2s infinite ease-in-out;
-        }
-
-        /* Clean Scrollbars */
-        .map-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .map-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        .map-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
+        /* Smooth Map Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 9999px; }
     </style>
 </head>
-<body class="h-full flex justify-center items-center p-0 sm:p-4 antialiased text-slate-800">
+<body class="min-h-screen flex flex-col bg-slate-200 text-slate-900 justify-center items-center">
 
-    <!-- Mobile App Frame Wrapper -->
-    <div class="w-full max-w-md h-[100vh] sm:h-[880px] bg-white sm:rounded-[36px] shadow-[0_20px_50px_rgba(37,99,235,0.12)] flex flex-col overflow-hidden relative border-0 sm:border-[6px] border-slate-200">
+    <!-- Mobile Frame Outer Container -->
+    <div class="w-full max-w-md min-h-screen sm:min-h-[844px] bg-white shadow-2xl flex flex-col relative overflow-hidden sm:rounded-3xl border-0 sm:border border-blue-200">
 
-        <!-- Top Header Navigation -->
-        <header class="bg-white/95 backdrop-blur-md px-4 py-3.5 border-b border-slate-100 z-20 flex justify-between items-center shrink-0 shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-md shadow-blue-500/20">
-                    <i class="fa-solid fa-square-p text-white"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="font-extrabold text-slate-900 text-sm tracking-tight">Shopping Park</h1>
-                        <span class="bg-blue-50 text-blue-600 border border-blue-200 text-[9px] font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse"></span> AO VIVO
-                        </span>
+        <!-- Mobile Header (Blue & White Theme) -->
+        <header class="bg-gradient-to-r from-brand-900 via-brand-800 to-brand-600 text-white p-4 pt-5 rounded-b-2xl shadow-md z-30">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-black border border-white/30 shadow-inner">
+                        <i class="fa-solid fa-square-parking text-2xl text-white"></i>
                     </div>
-                    <p class="text-[11px] text-slate-500 font-medium flex items-center gap-1 mt-0.5">
-                        <i class="fa-solid fa-location-dot text-blue-600 text-[10px]"></i> Estacionamento Inteligente
-                    </p>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <h1 class="font-extrabold text-base tracking-tight leading-none text-white">Estádio Smart Park</h1>
+                            <span class="px-2 py-0.5 text-[9px] font-extrabold bg-emerald-400 text-slate-950 rounded-full flex items-center gap-1 shadow-sm">
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span> SENSOR ONLINE
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-blue-100 mt-1 flex items-center gap-1">
+                            <i class="fa-solid fa-location-dot text-blue-200"></i> Arena Futebol • Estacionamento Indoor
+                        </p>
+                    </div>
+                </div>
+
+                <button onclick="toggleInfoModal()" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition text-xs border border-white/20">
+                    <i class="fa-solid fa-circle-info"></i>
+                </button>
+            </div>
+
+            <!-- Stats Bar Header -->
+            <div class="mt-3.5 pt-3 border-t border-white/20 grid grid-cols-3 gap-2 text-center text-white">
+                <div class="bg-white/10 rounded-xl p-2 backdrop-blur-sm border border-white/10">
+                    <span class="text-[10px] text-blue-100 block uppercase font-bold">Vagas Livres</span>
+                    <span class="text-base font-extrabold text-white" id="stat-free-header">0</span>
+                </div>
+                <div class="bg-white/10 rounded-xl p-2 backdrop-blur-sm border border-white/10">
+                    <span class="text-[10px] text-blue-100 block uppercase font-bold">Tarifa Base</span>
+                    <span class="text-base font-extrabold text-amber-300">R$ 15/h</span>
+                </div>
+                <div class="bg-white/10 rounded-xl p-2 backdrop-blur-sm border border-white/10">
+                    <span class="text-[10px] text-blue-100 block uppercase font-bold">Ocupação</span>
+                    <span class="text-base font-extrabold text-white" id="stat-rate-header">0%</span>
                 </div>
             </div>
-            
-            <button onclick="openModal('qrModal')" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm">
-                <i class="fa-solid fa-qrcode text-blue-600"></i>
-                <span>Ticket</span>
-            </button>
         </header>
 
-        <!-- Floor Switcher & Filter Toolbar -->
-        <section class="bg-slate-50/90 backdrop-blur-sm px-3.5 py-2.5 border-b border-slate-200 z-10 space-y-2.5 shrink-0">
-            <div class="flex items-center justify-between gap-2">
-                <!-- Floor Selector Toggle -->
-                <div class="flex bg-slate-200/80 p-1 rounded-xl w-full max-w-[210px]">
-                    <button id="btnG1" onclick="switchFloor(1)" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition text-white bg-blue-600 shadow-sm text-center">
-                        PISO G1
+        <!-- Main Scrollable Mobile Area -->
+        <main class="flex-1 overflow-y-auto p-3 space-y-3 pb-24">
+
+            <!-- Selection and Pricing Box -->
+            <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-blue-100 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-bold text-brand-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <i class="fa-solid fa-sliders text-brand-600"></i> Seleção & Duração
+                    </h2>
+                    <span class="text-[10px] font-extrabold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-200">
+                        Piso Ativo: <span id="active-floor-label">Piso E1</span>
+                    </span>
+                </div>
+
+                <!-- Floor Toggle Switcher -->
+                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-xl">
+                    <button onclick="switchFloor(1)" id="btn-floor-1" class="py-2 px-3 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-sm">
+                        <i class="fa-solid fa-layer-group"></i> Piso E1 (Térreo)
                     </button>
-                    <button id="btnG2" onclick="switchFloor(2)" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 text-center">
-                        PISO G2
+                    <button onclick="switchFloor(2)" id="btn-floor-2" class="py-2 px-3 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-brand-700">
+                        <i class="fa-solid fa-layer-group"></i> Piso E2 (Superior)
                     </button>
                 </div>
 
-                <!-- Live Counter Badge -->
-                <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
-                    <div class="text-xs">
-                        <span id="freeSpotsCount" class="font-black text-emerald-600 text-sm">--</span>
-                        <span class="text-slate-500 text-[11px]"> vagas</span>
+                <!-- Time and Price Selector -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50/50 p-3 rounded-xl border border-blue-100 space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-slate-700 flex items-center gap-1.5">
+                            <i class="fa-regular fa-clock text-brand-600"></i> Tempo de Estadia:
+                        </span>
+                        <span class="font-extrabold text-brand-800 text-sm bg-white px-2.5 py-0.5 rounded-lg border border-blue-200 shadow-sm" id="duration-display">3 Horas</span>
                     </div>
-                    <button onclick="simulateOccupancyChange()" title="Simular mudança de vagas" class="ml-1 text-slate-400 hover:text-blue-600 active:rotate-180 transition duration-300">
-                        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+
+                    <input type="range" id="time-slider" min="1" max="6" value="3" step="1" oninput="updatePricing()" class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-brand-600">
+
+                    <div class="flex justify-between items-center text-[10px] text-slate-500 font-semibold pt-0.5">
+                        <span>1 Hora (R$15)</span>
+                        <span>Tempo de Jogo (3h)</span>
+                        <span>6 Horas (R$90)</span>
+                    </div>
+
+                    <!-- Calculated Total Box -->
+                    <div class="mt-2 pt-2 border-t border-blue-200/60 flex items-center justify-between">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Total Estimado</span>
+                            <span class="text-xl font-black text-brand-700 leading-none" id="total-price-display">R$ 45,00</span>
+                        </div>
+                        <button onclick="quickReserveFreeSpot()" class="px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-brand-500/20 transition flex items-center gap-1.5 active:scale-95">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span>Escolha Rápida</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Spot Select Dropdown -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Selecione a Vaga Desejada:
+                    </label>
+                    <select id="spot-dropdown" onchange="selectSpot(this.value)" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl p-2.5 font-bold focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
+                        <!-- Injected via JS -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Selected Spot Card Banner -->
+            <div id="selected-spot-card" class="bg-gradient-to-r from-brand-950 via-brand-900 to-brand-800 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden hidden">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-blue-200 bg-white/10 px-2.5 py-0.5 rounded-full border border-white/10">Vaga Selecionada</span>
+                        <h3 class="text-2xl font-black text-white mt-1.5" id="spot-card-code">E1-A01</h3>
+                        <p class="text-xs text-blue-200 flex items-center gap-1" id="spot-card-sector"><i class="fa-solid fa-map-pin"></i> Setor Norte • Portão A</p>
+                    </div>
+                    <span id="spot-card-badge" class="px-3 py-1 text-xs font-black rounded-lg bg-emerald-500 text-slate-950 shadow">
+                        Livre
+                    </span>
+                </div>
+
+                <div class="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between text-xs text-blue-100">
+                    <span id="spot-card-type"><i class="fa-solid fa-car"></i> Vaga Padrão</span>
+                    <span id="spot-card-price-tag" class="font-extrabold text-amber-300">R$ 45,00 (3h)</span>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                    <button onclick="startCarNavigationAnimation()" class="py-2.5 px-3 bg-brand-500 hover:bg-brand-400 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-car-side text-sm"></i>
+                        <span>Dirigir até Vaga</span>
+                    </button>
+                    <button onclick="simulateToggleSpot(selectedSpotId)" class="py-2.5 px-3 bg-white/15 hover:bg-white/25 text-white font-bold text-xs rounded-xl border border-white/20 transition flex items-center justify-center gap-1.5 active:scale-95" title="Simular detecção pelo sensor de teto">
+                        <i class="fa-solid fa-satellite-dish text-blue-200"></i>
+                        <span>Testar Sensor</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Filter Categories -->
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-[11px] font-medium no-scrollbar">
-                <button onclick="setFilter('all')" id="filterAll" class="px-3 py-1 rounded-lg bg-blue-600 text-white font-bold shrink-0 shadow-sm">Todas</button>
-                <button onclick="setFilter('free')" id="filterFree" class="px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 shrink-0 flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Livres
-                </button>
-                <button onclick="setFilter('pref')" id="filterPref" class="px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 shrink-0 flex items-center gap-1.5">
-                    <i class="fa-solid fa-wheelchair text-blue-600"></i> PCD
-                </button>
-                <button onclick="setFilter('elec')" id="filterElec" class="px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 shrink-0 flex items-center gap-1.5">
-                    <i class="fa-solid fa-bolt text-amber-500"></i> Elétrico
-                </button>
-            </div>
-        </section>
+            <!-- Interactive Map Display -->
+            <div class="bg-white rounded-2xl border border-blue-200 shadow-sm overflow-hidden">
+                <div class="p-3 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-xs font-black tracking-wide text-blue-100" id="map-floor-title">PISO E1 • MAPA TÁTICO</span>
+                    </div>
+                    <button onclick="resetView()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-blue-200 px-2.5 py-1 rounded-lg font-bold border border-slate-700 flex items-center gap-1">
+                        <i class="fa-solid fa-rotate-left"></i> Redefinir
+                    </button>
+                </div>
 
-        <!-- Parking Viewport (Horizontal 3-Row Layout from Sketch) -->
-        <main class="flex-1 parking-asphalt-light relative overflow-hidden flex flex-col">
-            
-            <div id="mapViewport" class="w-full h-full relative overflow-y-auto map-scrollbar p-2 sm:p-3">
-                
-                <!-- Floor Map Container with 3 horizontal rows matching sketch -->
-                <div class="w-full min-h-[580px] relative rounded-2xl bg-white border border-slate-200 shadow-md p-2 flex flex-col justify-between overflow-hidden">
+                <!-- SVG Interactive Parking Map Container -->
+                <div class="relative w-full overflow-hidden bg-slate-950 min-h-[380px] flex items-center justify-center p-2">
                     
-                    <!-- SVG Navigation Route Layer -->
-                    <svg id="routeSvg" class="absolute inset-0 w-full h-full z-10 pointer-events-none" viewBox="0 0 350 580">
+                    <svg id="parking-svg" viewBox="0 0 900 620" class="w-full h-auto max-w-[900px] select-none">
                         <defs>
-                            <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#2563eb" />
-                                <stop offset="100%" stop-color="#1d4ed8" />
+                            <!-- Route Arrow Marker -->
+                            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#60A5FA" />
+                            </marker>
+
+                            <!-- Gradient for Lanes -->
+                            <linearGradient id="laneGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#1E293B"/>
+                                <stop offset="100%" stop-color="#0F172A"/>
+                            </linearGradient>
+
+                            <!-- Spot Background Pattern -->
+                            <linearGradient id="spotFreeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#064E3B" stop-opacity="0.8"/>
+                                <stop offset="100%" stop-color="#022C22" stop-opacity="0.9"/>
+                            </linearGradient>
+                            <linearGradient id="spotOccupiedGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#881337" stop-opacity="0.8"/>
+                                <stop offset="100%" stop-color="#4C0519" stop-opacity="0.9"/>
                             </linearGradient>
                         </defs>
-                        
-                        <!-- Dynamic Route Lines -->
-                        <path id="routePathBg" d="" fill="none" stroke="#3b82f6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.18" />
-                        <path id="routePath" d="" fill="none" stroke="url(#routeGrad)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" class="animated-route-line" />
 
-                        <!-- Animated Arrow Indicator -->
-                        <g id="animatedArrowGroup" class="hidden">
-                            <circle r="13" fill="#2563eb" opacity="0.25">
-                                <animate attributeName="r" values="7;15;7" dur="1.2s" repeatCount="indefinite" />
-                                <animate attributeName="opacity" values="0.4;0.1;0.4" dur="1.2s" repeatCount="indefinite" />
-                            </circle>
-                            <circle r="7.5" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
-                            <path d="M -2 -3.5 L 3.5 0 L -2 3.5 L -0.5 0 Z" fill="#ffffff" />
-                            <animateMotion id="arrowMotion" dur="2.4s" repeatCount="indefinite" rotate="auto" path="" />
+                        <!-- Outer Garage Floor Boundary -->
+                        <rect x="10" y="10" width="880" height="600" rx="24" fill="#090D16" stroke="#1E3A8A" stroke-width="4" />
+
+                        <!-- Parking Aisles and Roads -->
+                        <!-- Vertical Main Corridor -->
+                        <rect x="410" y="30" width="80" height="560" fill="url(#laneGrad)" rx="10" stroke="#334155" stroke-width="2"/>
+                        <line x1="450" y1="30" x2="450" y2="590" stroke="#60A5FA" stroke-width="2" stroke-dasharray="10 8" />
+
+                        <!-- Horizontal North Corridor -->
+                        <rect x="30" y="170" width="840" height="70" fill="url(#laneGrad)" rx="10" stroke="#334155" stroke-width="2"/>
+                        <line x1="30" y1="205" x2="870" y2="205" stroke="#F59E0B" stroke-width="2" stroke-dasharray="10 8" />
+
+                        <!-- Horizontal South Corridor -->
+                        <rect x="30" y="380" width="840" height="70" fill="url(#laneGrad)" rx="10" stroke="#334155" stroke-width="2"/>
+                        <line x1="30" y1="415" x2="870" y2="415" stroke="#F59E0B" stroke-width="2" stroke-dasharray="10 8" />
+
+                        <!-- Direction Arrows on Road -->
+                        <g fill="#475569" opacity="0.6">
+                            <polygon points="450,80 440,100 460,100" />
+                            <polygon points="450,540 440,520 460,520" />
+                            <polygon points="250,205 230,195 230,215" />
+                            <polygon points="650,205 670,195 670,215" />
+                        </g>
+
+                        <!-- Stadium Entrances Visual Badges -->
+                        <g transform="translate(450, 15)">
+                            <rect x="-90" y="-10" width="180" height="26" fill="#1E40AF" rx="8" stroke="#93C5FD" stroke-width="2"/>
+                            <text x="0" y="7" fill="#FFFFFF" text-anchor="middle" font-size="11" font-weight="800">
+                                🏟️ ACESSO NORTE (ARIBI)
+                            </text>
+                        </g>
+
+                        <g transform="translate(450, 605)">
+                            <rect x="-90" y="-12" width="180" height="26" fill="#1E40AF" rx="8" stroke="#93C5FD" stroke-width="2"/>
+                            <text x="0" y="5" fill="#FFFFFF" text-anchor="middle" font-size="11" font-weight="800">
+                                🏟️ ACESSO SUL (PORTÃO B)
+                            </text>
+                        </g>
+
+                        <!-- Garage Entry Point (Ramp) -->
+                        <g transform="translate(80, 580)">
+                            <rect x="-55" y="-14" width="110" height="28" fill="#2563EB" rx="8" stroke="#60A5FA" stroke-width="2"/>
+                            <text x="0" y="4" fill="#FFFFFF" text-anchor="middle" font-size="11" font-weight="900">
+                                🚗 ENTRADA
+                            </text>
+                        </g>
+
+                        <!-- Dynamic Group for Parking Spots -->
+                        <g id="spots-group"></g>
+
+                        <!-- Group for Path and Navigation Line -->
+                        <g id="route-group"></g>
+
+                        <!-- Animated Interactive Car Avatar -->
+                        <g id="animated-car" class="hidden">
+                            <!-- Car Shadow -->
+                            <rect x="-14" y="-22" width="28" height="44" rx="8" fill="#000000" opacity="0.5" filter="blur(2px)"/>
+                            <!-- Car Body -->
+                            <rect x="-12" y="-20" width="24" height="40" rx="7" fill="#2563EB" stroke="#FFFFFF" stroke-width="2"/>
+                            <!-- Car Windshield & Roof -->
+                            <rect x="-9" y="-10" width="18" height="12" rx="3" fill="#93C5FD" />
+                            <rect x="-8" y="6" width="16" height="8" rx="2" fill="#1E3A8A" />
+                            <!-- Headlights -->
+                            <circle cx="-7" cy="-18" r="2.5" fill="#FEF08A"/>
+                            <circle cx="7" cy="-18" r="2.5" fill="#FEF08A"/>
+                            <!-- Taillights -->
+                            <rect x="-9" y="18" width="4" height="2" fill="#EF4444"/>
+                            <rect x="5" y="18" width="4" height="2" fill="#EF4444"/>
                         </g>
                     </svg>
 
-                    <!-- Architectural Ground Paint Graphics Layer -->
-                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-50" viewBox="0 0 350 580">
-                        <!-- Upper Driving Lane Line -->
-                        <line x1="20" y1="170" x2="330" y2="170" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="8,8" />
-                        
-                        <!-- Lower Driving Lane Line -->
-                        <line x1="20" y1="390" x2="330" y2="390" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="8,8" />
+                </div>
 
-                        <!-- Connecting Left Loop Lane -->
-                        <line x1="30" y1="170" x2="30" y2="390" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="8,8" />
-                    </svg>
-
-                    <!-- 1. TOP ROW PARKING SPOTS (Attached to Top Perimeter) -->
-                    <div class="w-full relative z-0 mb-2">
-                        <div class="text-[9px] font-black text-slate-400 tracking-wider uppercase mb-1 px-1 flex justify-between items-center">
-                            <span>Vagas Parede Superior</span>
-                            <span class="text-[8px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">FILA 01</span>
-                        </div>
-                        <div id="topRowGrid" class="grid grid-cols-5 gap-1.5"></div>
-                    </div>
-
-                    <!-- Upper Driving Lane Indicator -->
-                    <div class="w-full h-8 bg-slate-100/80 rounded-xl border border-slate-200/60 flex items-center justify-between px-3 relative my-1">
-                        <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                            <i class="fa-solid fa-arrow-left text-[9px] text-blue-500"></i> Pista Superior
-                        </span>
-                        <span class="text-[9px] font-bold text-slate-400 font-mono">PISO G<span class="current-floor-label">1</span></span>
-                    </div>
-
-                    <!-- 2. MIDDLE ROW PARKING SPOTS (Central Island - matching sketch) -->
-                    <div class="w-full relative z-0 my-2">
-                        <div class="text-[9px] font-black text-slate-400 tracking-wider uppercase mb-1 px-1 flex justify-between items-center">
-                            <span>Ilha Central de Vagas</span>
-                            <span class="text-[8px] bg-blue-50 text-blue-600 border border-blue-200 px-1.5 py-0.5 rounded font-bold">ILHA CENTRAL</span>
-                        </div>
-                        <div id="middleRowGrid" class="grid grid-cols-6 gap-1"></div>
-                    </div>
-
-                    <!-- Lower Driving Lane Indicator -->
-                    <div class="w-full h-8 bg-slate-100/80 rounded-xl border border-slate-200/60 flex items-center justify-between px-3 relative my-1">
-                        <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                            Pista Inferior <i class="fa-solid fa-arrow-left text-[9px] text-blue-500"></i>
-                        </span>
-                        <span class="text-[9px] font-bold text-slate-400 font-mono">SAÍDA / ELEVADORES</span>
-                    </div>
-
-                    <!-- 3. BOTTOM ROW PARKING SPOTS & ENTRANCE ARROW (Matching Sketch) -->
-                    <div class="w-full relative z-0 mt-2">
-                        <div class="text-[9px] font-black text-slate-400 tracking-wider uppercase mb-1 px-1 flex justify-between items-center">
-                            <span>Vagas Parede Inferior</span>
-                            <span class="text-[8px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-bold">ENTRADA PRÓXIMA</span>
-                        </div>
-                        
-                        <div class="flex items-stretch gap-1.5">
-                            <!-- Left Bottom Row Grid (4 spots) -->
-                            <div id="bottomRowGrid" class="grid grid-cols-4 gap-1.5 flex-1"></div>
-
-                            <!-- Entrance Arrow (Bottom Right as sketched) -->
-                            <div class="w-20 bg-blue-600 text-white rounded-xl p-2 flex flex-col items-center justify-center text-center shadow-md shadow-blue-500/20 border-2 border-blue-400 shrink-0">
-                                <div class="w-7 h-7 rounded-full bg-white text-blue-600 flex items-center justify-center font-black text-xs shadow mb-1 animate-bounce">
-                                    <i class="fa-solid fa-arrow-up"></i>
-                                </div>
-                                <span class="text-[9px] font-black tracking-wider leading-none">ENTRADA</span>
-                                <span class="text-[7px] text-blue-100 font-bold leading-tight mt-0.5">VEÍCULOS</span>
-                            </div>
-                        </div>
-                    </div>
-
+                <!-- Map Legend -->
+                <div class="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-around text-[11px] font-bold text-slate-300">
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 border border-white/40"></span> Livre</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-600 border border-white/40"></span> Ocupada</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-cyan-400 border border-white/40"></span> PCD</span>
+                    <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-violet-500 border border-white/40"></span> Elétrico</span>
                 </div>
             </div>
-        </main>
 
-        <!-- Bottom Selection Drawer Footer -->
-        <footer class="bg-white border-t border-slate-200 p-4 z-20 shrink-0 shadow-lg">
-            <!-- State 1: Default No Selection -->
-            <div id="noSelectionView" class="flex items-center justify-between gap-3 py-1">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0 text-base shadow-inner">
-                        <i class="fa-solid fa-hand-pointer animate-bounce text-blue-600"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xs font-bold text-slate-900">Selecione uma vaga verde no mapa</h3>
-                        <p id="summaryPreferencesText" class="text-[11px] text-slate-500 leading-tight">15 vagas no layout do seu piso.</p>
-                    </div>
-                </div>
-                <button onclick="openModal('entryWizardModal')" class="shrink-0 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-xl text-[11px] font-bold border border-blue-200 transition">
-                    <i class="fa-solid fa-sliders text-blue-600 mr-1"></i>Ajustar
-                </button>
-            </div>
-
-            <!-- State 2: Spot Selected -->
-            <div id="selectionView" class="hidden flex-col gap-3">
-                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-2xl border border-slate-200">
-                    <div class="flex items-center gap-3">
-                        <div id="spotBadge" class="w-12 h-12 rounded-xl bg-blue-600 text-white flex flex-col items-center justify-center font-black shadow-md shadow-blue-500/20">
-                            <span class="text-[8px] uppercase tracking-wider text-blue-100 leading-none">VAGA</span>
-                            <span id="selectedSpotCode" class="text-base leading-none mt-1 font-mono text-white">A-02</span>
+            <!-- Animated Driving Guidance Box -->
+            <div id="nav-guidance-panel" class="bg-gradient-to-br from-brand-50 to-blue-100 border border-brand-200 rounded-2xl p-3.5 shadow-sm hidden">
+                <div class="flex items-center justify-between mb-2.5 pb-2 border-b border-brand-200">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center text-sm font-black shadow-md">
+                            <i class="fa-solid fa-location-arrow"></i>
                         </div>
                         <div>
-                            <div class="flex items-center gap-2">
-                                <h4 id="selectedSpotSector" class="font-extrabold text-sm text-slate-900">Fila Superior - Piso G1</h4>
-                                <span id="selectedSpotType" class="text-[10px] bg-slate-200 text-slate-700 border border-slate-300 px-2 py-0.5 rounded-full font-bold">Padrão</span>
-                            </div>
-                            <p id="selectedSpotDistance" class="text-xs text-blue-600 font-semibold mt-0.5 flex items-center gap-1">
-                                <i class="fa-solid fa-route"></i> Rota calculada (~20m)
-                            </p>
+                            <h3 class="font-extrabold text-xs text-brand-950">Rota Indoor para <span id="nav-target-code" class="text-brand-600 font-black">E1-A01</span></h3>
+                            <p class="text-[11px] text-slate-600 font-medium" id="nav-status-desc">Pronto para iniciar percurso</p>
                         </div>
                     </div>
-
-                    <button onclick="clearSelection()" class="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 flex items-center justify-center transition">
-                        <i class="fa-solid fa-xmark text-sm"></i>
+                    <button onclick="cancelNavigation()" class="text-slate-400 hover:text-slate-700 text-xs p-1">
+                        <i class="fa-solid fa-xmark text-base"></i>
                     </button>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex flex-col gap-2">
-                    <div class="flex items-center gap-2">
-                        <button id="btnReserveSpot" onclick="reserveSpot()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-3 rounded-xl shadow-md shadow-amber-500/20 transition active:scale-[0.98] flex items-center justify-center gap-2 text-xs">
-                            <i class="fa-solid fa-bookmark text-white"></i>
-                            <span id="btnReserveText">Reservar (15 min)</span>
-                        </button>
+                <div id="nav-steps-container" class="space-y-1.5 text-xs">
+                    <!-- Injected via JS -->
+                </div>
 
-                        <button id="btnConfirmRoute" onclick="confirmSpotAndStartRoute()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 px-3 rounded-xl shadow-md shadow-blue-600/20 transition active:scale-[0.98] flex items-center justify-center gap-2 text-xs">
-                            <i class="fa-solid fa-location-arrow"></i>
-                            <span id="btnConfirmText">Confirmar & Ir</span>
-                        </button>
-                        
-                        <button id="btnGuidanceSteps" onclick="startGuidance()" class="hidden bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-3.5 rounded-xl shadow-md transition text-xs">
-                            <i class="fa-solid fa-list-check"></i>
-                        </button>
-                    </div>
-
-                    <!-- Reservation Status Alert -->
-                    <div id="reservationTimerBanner" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-2.5 text-center text-[11px] text-amber-900 font-medium flex items-center justify-between">
-                        <span class="flex items-center gap-1.5">
-                            <i class="fa-solid fa-lightbulb text-amber-500 animate-pulse"></i>
-                            Luz LARANJA acesa no teto da vaga!
-                        </span>
-                        <span class="bg-amber-100 border border-amber-300 text-amber-800 px-2 py-0.5 rounded-md font-mono font-bold">14:59 min</span>
-                    </div>
+                <div class="mt-3 grid grid-cols-2 gap-2">
+                    <button onclick="startCarAnimation()" id="btn-drive-anim" class="py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-play"></i>
+                        <span>Simular Carro Dirigindo</span>
+                    </button>
+                    <button onclick="generateTicketForCurrentTarget()" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+                        <i class="fa-solid fa-ticket"></i>
+                        <span>Gerar Comprovante</span>
+                    </button>
                 </div>
             </div>
-        </footer>
+
+        </main>
+
+        <!-- Fixed Mobile Navigation Bar -->
+        <nav class="absolute bottom-0 inset-x-0 bg-white border-t border-slate-200 p-2 px-4 flex items-center justify-around z-40 shadow-lg">
+            <button onclick="window.scrollTo({top:0, behavior:'smooth'})" class="flex flex-col items-center gap-0.5 text-brand-600 font-extrabold text-[10px]">
+                <i class="fa-solid fa-square-parking text-lg"></i>
+                <span>Vagas</span>
+            </button>
+            <button onclick="toggleSimulationMode()" id="nav-sim-btn" class="flex flex-col items-center gap-0.5 text-slate-500 hover:text-brand-600 font-extrabold text-[10px]">
+                <i class="fa-solid fa-bolt text-lg text-amber-500"></i>
+                <span>Simular Sensores</span>
+            </button>
+            <button onclick="toggleInfoModal()" class="flex flex-col items-center gap-0.5 text-slate-500 hover:text-brand-600 font-extrabold text-[10px]">
+                <i class="fa-solid fa-microchip text-lg"></i>
+                <span>Tecnologia IoT</span>
+            </button>
+        </nav>
 
     </div>
 
-    <!-- MODAL: QR Code Ticket -->
-    <div id="qrModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white border border-slate-200 w-full max-w-xs rounded-3xl p-6 text-center shadow-2xl relative">
-            <button onclick="closeModal('qrModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-base">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+    <!-- Ticket Digital Modal -->
+    <div id="ticket-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-2xl relative border border-blue-100 text-center space-y-3">
             
-            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl border border-blue-100 flex items-center justify-center mx-auto mb-3 text-xl font-bold">
-                <i class="fa-solid fa-qrcode"></i>
+            <button onclick="closeTicketModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+
+            <div class="inline-flex p-3 rounded-2xl bg-blue-50 text-brand-600 border border-blue-100">
+                <i class="fa-solid fa-qrcode text-3xl"></i>
             </div>
 
-            <h3 class="text-base font-extrabold text-slate-900 mb-0.5">Seu Ticket Digital</h3>
-            <p class="text-xs text-slate-500 mb-4">Shopping Plaza - Estacionamento Inteligente</p>
-
-            <div class="bg-slate-50 p-3 rounded-2xl inline-block mb-4 shadow-inner border border-slate-200">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=SHOPPING_PARK_TICKET_9821" alt="QR Ticket" class="w-36 h-36 mx-auto rounded-lg" />
+            <div>
+                <span class="text-[9px] font-black uppercase tracking-widest text-brand-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">PASS DIGITAL SMART PARKING</span>
+                <h2 class="text-lg font-black text-slate-900 mt-1">Reserva Confirmada</h2>
             </div>
 
-            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-left text-xs text-slate-700 space-y-1.5 mb-4">
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Código Ticket:</span>
-                    <span class="font-mono font-bold text-slate-900">#PK-98241</span>
+            <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 text-left space-y-1.5 text-xs">
+                <div class="flex justify-between items-center pb-1 border-b border-slate-200">
+                    <span class="text-slate-500 font-semibold">Vaga Reservada</span>
+                    <span class="font-black text-brand-700 text-sm mono-font" id="ticket-spot-id">E1-A01</span>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Horário Entrada:</span>
-                    <span class="font-mono font-bold text-slate-900" id="ticketTime">14:32</span>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-semibold">Piso</span>
+                    <span class="text-slate-800 font-bold" id="ticket-floor">Piso E1</span>
                 </div>
-                <div class="flex justify-between pt-1 border-t border-slate-200">
-                    <span class="text-slate-500">Tempo Est.:</span>
-                    <span class="font-bold text-blue-600" id="ticketTimeEstimate">Até 2 horas</span>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-semibold">Tempo de Estadia</span>
+                    <span class="text-slate-800 font-bold" id="ticket-duration">3 Horas</span>
                 </div>
-                <div class="flex justify-between">
-                    <span class="text-slate-500">Tarifa Est.:</span>
-                    <span class="font-bold text-emerald-600" id="ticketFeeEstimate">R$ 18,00</span>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-500 font-semibold">Preço Total</span>
+                    <span class="text-brand-700 font-black" id="ticket-price">R$ 45,00</span>
                 </div>
             </div>
 
-            <button onclick="closeModal('qrModal')" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs transition">
-                Fechar
+            <div class="bg-white p-3 rounded-xl inline-block border border-slate-200 shadow-sm">
+                <canvas id="qr-canvas" class="w-32 h-32 mx-auto"></canvas>
+            </div>
+            <p class="text-[10px] text-slate-400 mono-font">PASS ID: ESP-2026-STADIUM</p>
+
+            <button onclick="closeTicketModal()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl transition">
+                Concluído
             </button>
         </div>
     </div>
 
-    <!-- MODAL: Entry QR Code Wizard -->
-    <div id="entryWizardModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white border border-slate-200 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative overflow-hidden">
-            <!-- Header -->
-            <div class="text-center mb-5">
-                <div class="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl font-extrabold shadow-md shadow-blue-500/20">
-                    <i class="fa-solid fa-square-p"></i>
-                </div>
-                <h2 class="text-base font-extrabold text-slate-900">Bem-vindo ao Shopping Plaza</h2>
-                <p class="text-xs text-slate-500">Escolha suas preferências antes de ir para o mapa</p>
-            </div>
-
-            <!-- Wizard Step 1: Spot Type -->
-            <div id="wizardStep1" class="space-y-4">
-                <label class="block text-xs font-extrabold text-blue-600 uppercase tracking-wider">1. Qual o tipo de vaga desejada?</label>
-                
-                <div class="grid grid-cols-2 gap-2.5">
-                    <button type="button" onclick="selectSpotTypePreference('all')" id="prefTypeAll" class="pref-type-btn p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/60 text-left transition flex flex-col justify-between h-20">
-                        <i class="fa-solid fa-car text-blue-600 text-base"></i>
-                        <span class="text-xs font-bold text-slate-900">Qualquer Vaga</span>
-                    </button>
-
-                    <button type="button" onclick="selectSpotTypePreference('pref')" id="prefTypePref" class="pref-type-btn p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left transition flex flex-col justify-between h-20">
-                        <i class="fa-solid fa-wheelchair text-blue-600 text-base"></i>
-                        <span class="text-xs font-bold text-slate-900">PCD / Preferencial</span>
-                    </button>
-
-                    <button type="button" onclick="selectSpotTypePreference('elec')" id="prefTypeElec" class="pref-type-btn p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left transition flex flex-col justify-between h-20">
-                        <i class="fa-solid fa-bolt text-amber-500 text-base"></i>
-                        <span class="text-xs font-bold text-slate-900">Carro Elétrico</span>
-                    </button>
-
-                    <button type="button" onclick="selectSpotTypePreference('fam')" id="prefTypeFam" class="pref-type-btn p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left transition flex flex-col justify-between h-20">
-                        <i class="fa-solid fa-baby-carriage text-pink-500 text-base"></i>
-                        <span class="text-xs font-bold text-slate-900">Gestante / Família</span>
-                    </button>
-                </div>
-
-                <button onclick="goToWizardStep(2)" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl text-xs transition shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 mt-2">
-                    <span>Avançar: Tempo de Permanência</span>
-                    <i class="fa-solid fa-arrow-right text-white"></i>
-                </button>
-            </div>
-
-            <!-- Wizard Step 2: Duration -->
-            <div id="wizardStep2" class="space-y-4 hidden">
-                <div class="flex items-center justify-between">
-                    <label class="block text-xs font-extrabold text-blue-600 uppercase tracking-wider">2. Quanto tempo vai permanecer?</label>
-                    <button onclick="goToWizardStep(1)" class="text-[11px] text-slate-500 hover:text-slate-900 font-semibold">Voltar</button>
-                </div>
-
-                <div class="space-y-2">
-                    <button type="button" onclick="selectTimePreference('1h', 'Até 1 hora', 12)" id="timeBtn1h" class="time-pref-btn w-full p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/60 text-left flex items-center justify-between transition">
-                        <div class="flex items-center gap-2.5">
-                            <i class="fa-regular fa-clock text-blue-600"></i>
-                            <div>
-                                <div class="text-xs font-bold text-slate-900">Rápido (Até 1 hora)</div>
-                                <div class="text-[10px] text-slate-500">Compras expressas ou retiradas</div>
-                            </div>
-                        </div>
-                        <span class="text-xs font-extrabold text-emerald-600">R$ 12,00</span>
-                    </button>
-
-                    <button type="button" onclick="selectTimePreference('2-4h', '2 a 4 horas', 22)" id="timeBtn2-4h" class="time-pref-btn w-full p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left flex items-center justify-between transition">
-                        <div class="flex items-center gap-2.5">
-                            <i class="fa-solid fa-film text-slate-400"></i>
-                            <div>
-                                <div class="text-xs font-bold text-slate-900">Padrão (2 a 4 horas)</div>
-                                <div class="text-[10px] text-slate-500">Alimentação, Lojas e Cinema</div>
-                            </div>
-                        </div>
-                        <span class="text-xs font-extrabold text-slate-700">R$ 22,00</span>
-                    </button>
-
-                    <button type="button" onclick="selectTimePreference('+4h', 'Mais de 4 horas', 35)" id="timeBtn+4h" class="time-pref-btn w-full p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left flex items-center justify-between transition">
-                        <div class="flex items-center gap-2.5">
-                            <i class="fa-solid fa-briefcase text-slate-400"></i>
-                            <div>
-                                <div class="text-xs font-bold text-slate-900">Diária / Longo Período</div>
-                                <div class="text-[10px] text-slate-500">Trabalho ou eventos longos</div>
-                            </div>
-                        </div>
-                        <span class="text-xs font-extrabold text-slate-700">R$ 35,00</span>
-                    </button>
-                </div>
-
-                <button onclick="confirmEntryWizard()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl text-xs transition shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 mt-2">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <span>Ver Vagas Recomendadas</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Step-by-Step Guidance -->
-    <div id="guidanceModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white border border-slate-200 w-full max-w-sm rounded-3xl p-6 text-center shadow-2xl relative">
+    <!-- Info Technology Modal -->
+    <div id="info-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-2xl relative border border-blue-100 space-y-3">
             
-            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-full border border-blue-100 flex items-center justify-center mx-auto mb-3 text-2xl">
-                <i class="fa-solid fa-location-arrow"></i>
+            <button onclick="toggleInfoModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600">Sensores de Teto IoT</span>
+                <h2 class="text-lg font-black text-slate-900 mt-0.5">Como Funciona?</h2>
             </div>
 
-            <div id="guidanceFloorBadge" class="inline-block bg-blue-100 border border-blue-200 text-blue-700 text-[10px] font-extrabold px-3 py-1 rounded-full mb-2 uppercase tracking-wide">
-                PISO G1
+            <div class="space-y-2.5 text-xs text-slate-600">
+                <div class="flex items-start gap-2.5 bg-blue-50/70 p-2.5 rounded-xl border border-blue-100">
+                    <i class="fa-solid fa-satellite-dish text-brand-600 text-base mt-0.5"></i>
+                    <div>
+                        <strong class="text-slate-800 block font-bold">Sensores ultrassônicos/ópticos</strong>
+                        Instalados no teto sobre cada vaga. A luz verde indica vaga livre e vermelha indica ocupada.
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-2.5 bg-blue-50/70 p-2.5 rounded-xl border border-blue-100">
+                    <i class="fa-solid fa-route text-brand-600 text-base mt-0.5"></i>
+                    <div>
+                        <strong class="text-slate-800 block font-bold">GPS Indoor & Animação</strong>
+                        O app calcula a rota exata do portão de entrada até a vaga selecionada, evitando congestionamento no estádio.
+                    </div>
+                </div>
             </div>
 
-            <h3 class="text-lg font-bold text-slate-900 mb-1">Rotas e Sinalização</h3>
-            <p class="text-xs text-slate-500 mb-5">Siga as instruções para chegar com segurança à vaga.</p>
-
-            <div id="guidanceSteps" class="text-left space-y-3 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                <!-- Dynamic steps generated via JS -->
-            </div>
-
-            <button onclick="finishGuidance()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl text-xs transition shadow-md shadow-blue-600/20 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-circle-check"></i> Veículo Estacionado
+            <button onclick="toggleInfoModal()" class="w-full py-2.5 bg-brand-600 text-white font-bold text-xs rounded-xl">
+                Entendi
             </button>
         </div>
     </div>
+
+    <!-- Notification Toasts Container -->
+    <div id="toast-container" class="fixed top-4 inset-x-4 z-50 flex flex-col gap-2 pointer-events-none max-w-xs mx-auto"></div>
 
     <script>
-        // Layout Data: 15 spots per floor matching sketch (Top Row, Middle Island, Bottom Row)
-        const ENTRANCE_POINT = { x: 310, y: 530 }; // Bottom Right entrance as sketched
-
-        const parkingData = {
-            1: [
-                // 1. TOP ROW SPOTS (5 slots) - attached to top wall
-                { id: 'T1', code: 'T-01', sector: 'Fila Superior', row: 'top', occupied: false, reserved: false, type: 'Padrão', x: 35, y: 50 },
-                { id: 'T2', code: 'T-02', sector: 'Fila Superior', row: 'top', occupied: true, reserved: false, type: 'Padrão', x: 100, y: 50 },
-                { id: 'T3', code: 'T-03', sector: 'Fila Superior', row: 'top', occupied: false, reserved: false, type: 'Preferencial', x: 165, y: 50 },
-                { id: 'T4', code: 'T-04', sector: 'Fila Superior', row: 'top', occupied: false, reserved: false, type: 'Padrão', x: 230, y: 50 },
-                { id: 'T5', code: 'T-05', sector: 'Fila Superior', row: 'top', occupied: true, reserved: false, type: 'Padrão', x: 295, y: 50 },
-
-                // 2. MIDDLE ROW SPOTS (Central Island - 6 slots)
-                { id: 'M1', code: 'M-01', sector: 'Ilha Central', row: 'middle', occupied: false, reserved: false, type: 'Elétrico', x: 30, y: 260 },
-                { id: 'M2', code: 'M-02', sector: 'Ilha Central', row: 'middle', occupied: false, reserved: false, type: 'Padrão', x: 85, y: 260 },
-                { id: 'M3', code: 'M-03', sector: 'Ilha Central', row: 'middle', occupied: true, reserved: false, type: 'Padrão', x: 140, y: 260 },
-                { id: 'M4', code: 'M-04', sector: 'Ilha Central', row: 'middle', occupied: false, reserved: false, type: 'Gestante', x: 195, y: 260 },
-                { id: 'M5', code: 'M-05', sector: 'Ilha Central', row: 'middle', occupied: false, reserved: false, type: 'Padrão', x: 250, y: 260 },
-                { id: 'M6', code: 'M-06', sector: 'Ilha Central', row: 'middle', occupied: true, reserved: false, type: 'Padrão', x: 305, y: 260 },
-
-                // 3. BOTTOM ROW SPOTS (4 slots) - next to Bottom-Right Entrance
-                { id: 'B1', code: 'B-01', sector: 'Fila Inferior', row: 'bottom', occupied: false, reserved: false, type: 'Preferencial', x: 35, y: 490 },
-                { id: 'B2', code: 'B-02', sector: 'Fila Inferior', row: 'bottom', occupied: false, reserved: false, type: 'Elétrico', x: 100, y: 490 },
-                { id: 'B3', code: 'B-03', sector: 'Fila Inferior', row: 'bottom', occupied: true, reserved: false, type: 'Padrão', x: 165, y: 490 },
-                { id: 'B4', code: 'B-04', sector: 'Fila Inferior', row: 'bottom', occupied: false, reserved: false, type: 'Padrão', x: 230, y: 490 },
-            ],
-            2: [
-                // Piso G2 Layout
-                { id: 'T21', code: 'T-11', sector: 'Fila Superior', row: 'top', occupied: false, reserved: false, type: 'Padrão', x: 35, y: 50 },
-                { id: 'T22', code: 'T-12', sector: 'Fila Superior', row: 'top', occupied: false, reserved: false, type: 'Padrão', x: 100, y: 50 },
-                { id: 'T23', code: 'T-13', sector: 'Fila Superior', row: 'top', occupied: true, reserved: false, type: 'Padrão', x: 165, y: 50 },
-                { id: 'T24', code: 'T-14', sector: 'Fila Superior', row: 'top', occupied: false, reserved: false, type: 'Preferencial', x: 230, y: 50 },
-                { id: 'T25', code: 'T-15', sector: 'Fila Superior', row: 'top', occupied: false, reserved: false, type: 'Padrão', x: 295, y: 50 },
-
-                { id: 'M21', code: 'M-11', sector: 'Ilha Central', row: 'middle', occupied: true, reserved: false, type: 'Padrão', x: 30, y: 260 },
-                { id: 'M22', code: 'M-12', sector: 'Ilha Central', row: 'middle', occupied: false, reserved: false, type: 'Elétrico', x: 85, y: 260 },
-                { id: 'M23', code: 'M-13', sector: 'Ilha Central', row: 'middle', occupied: false, reserved: false, type: 'Gestante', x: 140, y: 260 },
-                { id: 'M24', code: 'M-14', sector: 'Ilha Central', row: 'middle', occupied: false, reserved: false, type: 'Padrão', x: 195, y: 260 },
-                { id: 'M25', code: 'M-15', sector: 'Ilha Central', row: 'middle', occupied: true, reserved: false, type: 'Padrão', x: 250, y: 260 },
-                { id: 'M26', code: 'M-16', sector: 'Ilha Central', row: 'middle', occupied: false, reserved: false, type: 'Padrão', x: 305, y: 260 },
-
-                { id: 'B21', code: 'B-11', sector: 'Fila Inferior', row: 'bottom', occupied: false, reserved: false, type: 'Preferencial', x: 35, y: 490 },
-                { id: 'B22', code: 'B-12', sector: 'Fila Inferior', row: 'bottom', occupied: false, reserved: false, type: 'Padrão', x: 100, y: 490 },
-                { id: 'B23', code: 'B-13', sector: 'Fila Inferior', row: 'bottom', occupied: true, reserved: false, type: 'Padrão', x: 165, y: 490 },
-                { id: 'B24', code: 'B-14', sector: 'Fila Inferior', row: 'bottom', occupied: false, reserved: false, type: 'Elétrico', x: 230, y: 490 },
-            ]
-        };
-
+        // Global Application State
         let currentFloor = 1;
-        let selectedSpot = null;
-        let activeFilter = 'all';
-        let isRouteNavigating = false;
+        let selectedSpotId = null;
+        let activeNavigationSpot = null;
+        let selectedDurationHours = 3;
+        const hourlyRate = 15;
+        let isSimulating = false;
+        let simInterval = null;
+        let isCarAnimating = false;
 
-        let selectedTypePref = 'all';
-        let selectedTimePref = { code: '1h', label: 'Até 1 hora', fee: 12 };
+        const spotsData = [];
 
-        window.onload = function() {
-            const now = new Date();
-            document.getElementById('ticketTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            renderFloor(currentFloor);
-            openModal('entryWizardModal');
-        };
+        function initSpotsData() {
+            // Floor 1 Spots
+            generateFloorSpots(1, [
+                { sector: 'Setor Norte - Portão A', prefix: 'A', startY: 65 },
+                { sector: 'Setor Leste - Portão B', prefix: 'B', startY: 65 },
+                { sector: 'Setor Sul - Portão C', prefix: 'C', startY: 460 },
+                { sector: 'Setor Oeste - Portão D', prefix: 'D', startY: 460 }
+            ]);
 
-        function selectSpotTypePreference(type) {
-            selectedTypePref = type;
-            document.querySelectorAll('.pref-type-btn').forEach(btn => {
-                btn.className = "pref-type-btn p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left transition flex flex-col justify-between h-20";
-            });
-            const activeBtn = document.getElementById('prefType' + type.charAt(0).toUpperCase() + type.slice(1));
-            if (activeBtn) {
-                activeBtn.className = "pref-type-btn p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/60 text-left transition flex flex-col justify-between h-20";
-            }
+            // Floor 2 Spots
+            generateFloorSpots(2, [
+                { sector: 'Setor Norte Superior', prefix: 'E', startY: 65 },
+                { sector: 'Setor Leste Superior', prefix: 'F', startY: 65 },
+                { sector: 'Setor Sul Superior', prefix: 'G', startY: 460 },
+                { sector: 'Setor Oeste Superior', prefix: 'H', startY: 460 }
+            ]);
         }
 
-        function selectTimePreference(code, label, fee) {
-            selectedTimePref = { code, label, fee };
-            document.querySelectorAll('.time-pref-btn').forEach(btn => {
-                btn.className = "time-pref-btn w-full p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left flex items-center justify-between transition";
-                const badge = btn.querySelector('span');
-                if (badge) badge.className = "text-xs font-extrabold text-slate-700";
-            });
+        function generateFloorSpots(floorNum, sectors) {
+            sectors.forEach((sec, secIdx) => {
+                for (let i = 1; i <= 6; i++) {
+                    const code = `E${floorNum}-${sec.prefix}0${i}`;
+                    let type = 'comum';
+                    if (i === 1) type = 'pcd';
+                    else if (i === 6) type = 'eletrico';
 
-            const activeBtn = document.getElementById('timeBtn' + code);
-            if (activeBtn) {
-                activeBtn.className = "time-pref-btn w-full p-3 rounded-2xl border-2 border-blue-600 bg-blue-50/60 text-left flex items-center justify-between transition";
-                const badge = activeBtn.querySelector('span');
-                if (badge) badge.className = "text-xs font-extrabold text-emerald-600";
-            }
+                    const isOccupied = Math.random() < 0.35;
+                    const isRightSide = (secIdx === 1 || secIdx === 3);
+                    const startX = isRightSide ? 530 : 50;
+
+                    spotsData.push({
+                        id: code,
+                        floor: floorNum,
+                        sector: sec.sector,
+                        type: type,
+                        status: isOccupied ? 'occupied' : 'free',
+                        x: startX + (i - 1) * 56,
+                        y: sec.startY,
+                        width: 50,
+                        height: 95
+                    });
+                }
+            });
         }
 
-        function goToWizardStep(stepNum) {
-            if (stepNum === 1) {
-                document.getElementById('wizardStep1').classList.remove('hidden');
-                document.getElementById('wizardStep2').classList.add('hidden');
+        function renderSpots() {
+            const group = document.getElementById('spots-group');
+            group.innerHTML = '';
+
+            const currentSpots = spotsData.filter(s => s.floor === currentFloor);
+
+            // Populate Dropdown Options
+            const dropdown = document.getElementById('spot-dropdown');
+            dropdown.innerHTML = '<option value="">-- Clique aqui para escolher a vaga --</option>';
+
+            currentSpots.forEach(spot => {
+                const opt = document.createElement('option');
+                opt.value = spot.id;
+                opt.textContent = `${spot.id} • ${spot.sector} (${spot.status === 'free' ? 'LIVRE' : 'OCUPADA'})`;
+                if (spot.status === 'occupied') opt.disabled = true;
+                if (selectedSpotId === spot.id) opt.selected = true;
+                dropdown.appendChild(opt);
+
+                // SVG Group for Spot
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.setAttribute('class', 'cursor-pointer transition duration-150 hover:opacity-90');
+                g.setAttribute('onclick', `selectSpot('${spot.id}')`);
+
+                let rectFill = 'url(#spotFreeGrad)';
+                let strokeColor = '#10B981'; // Bright Green for Free Spot Lines
+                let ledColor = '#10B981';
+                let ledClass = 'sensor-glow-free';
+
+                if (spot.status === 'occupied') {
+                    rectFill = 'url(#spotOccupiedGrad)';
+                    strokeColor = '#EF4444';
+                    ledColor = '#EF4444';
+                    ledClass = 'sensor-glow-occupied';
+                } else if (spot.type === 'pcd') {
+                    strokeColor = '#06B6D4';
+                    ledColor = '#06B6D4';
+                    ledClass = 'sensor-glow-pcd';
+                } else if (spot.type === 'eletrico') {
+                    strokeColor = '#8B5CF6';
+                    ledColor = '#8B5CF6';
+                    ledClass = 'sensor-glow-eletrico';
+                }
+
+                const isSelected = (selectedSpotId === spot.id);
+                if (isSelected) {
+                    strokeColor = '#3B82F6';
+                }
+
+                // Parking Bay Base Box
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', spot.x);
+                rect.setAttribute('y', spot.y);
+                rect.setAttribute('width', spot.width);
+                rect.setAttribute('height', spot.height);
+                rect.setAttribute('rx', '8');
+                rect.setAttribute('fill', rectFill);
+                rect.setAttribute('stroke', isSelected ? '#FFFFFF' : strokeColor);
+                rect.setAttribute('stroke-width', isSelected ? '3.5' : '2');
+                g.appendChild(rect);
+
+                // Selection Highlight Pulse Outline
+                if (isSelected) {
+                    const selBox = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    selBox.setAttribute('x', spot.x - 3);
+                    selBox.setAttribute('y', spot.y - 3);
+                    selBox.setAttribute('width', spot.width + 6);
+                    selBox.setAttribute('height', spot.height + 6);
+                    selBox.setAttribute('rx', '10');
+                    selBox.setAttribute('fill', 'none');
+                    selBox.setAttribute('stroke', '#60A5FA');
+                    selBox.setAttribute('stroke-width', '2');
+                    selBox.setAttribute('stroke-dasharray', '4 4');
+                    g.appendChild(selBox);
+                }
+
+                // Overhead Ceiling LED Sensor
+                const sensorY = (spot.y < 200) ? spot.y + 14 : spot.y + spot.height - 14;
+                const sensorCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                sensorCircle.setAttribute('cx', spot.x + spot.width / 2);
+                sensorCircle.setAttribute('cy', sensorY);
+                sensorCircle.setAttribute('r', '6');
+                sensorCircle.setAttribute('fill', ledColor);
+                sensorCircle.setAttribute('stroke', '#FFFFFF');
+                sensorCircle.setAttribute('stroke-width', '1.5');
+                sensorCircle.setAttribute('class', ledClass);
+                g.appendChild(sensorCircle);
+
+                // Spot Label Badge
+                const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                labelText.setAttribute('x', spot.x + spot.width / 2);
+                labelText.setAttribute('y', spot.y + (spot.y < 200 ? 44 : 50));
+                labelText.setAttribute('fill', '#FFFFFF');
+                labelText.setAttribute('font-size', '11');
+                labelText.setAttribute('font-weight', '900');
+                labelText.setAttribute('text-anchor', 'middle');
+                labelText.textContent = spot.id.split('-')[1];
+                g.appendChild(labelText);
+
+                // Type Icon / Parked Car Graphic
+                if (spot.status === 'occupied') {
+                    const carIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    carIcon.setAttribute('x', spot.x + spot.width / 2);
+                    carIcon.setAttribute('y', spot.y + (spot.y < 200 ? 70 : 76));
+                    carIcon.setAttribute('font-size', '18');
+                    carIcon.setAttribute('text-anchor', 'middle');
+                    carIcon.textContent = '🚘';
+                    g.appendChild(carIcon);
+                } else if (spot.type === 'pcd') {
+                    const pcdText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    pcdText.setAttribute('x', spot.x + spot.width / 2);
+                    pcdText.setAttribute('y', spot.y + (spot.y < 200 ? 70 : 76));
+                    pcdText.setAttribute('font-size', '14');
+                    pcdText.setAttribute('text-anchor', 'middle');
+                    pcdText.textContent = '♿';
+                    g.appendChild(pcdText);
+                } else if (spot.type === 'eletrico') {
+                    const evText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    evText.setAttribute('x', spot.x + spot.width / 2);
+                    evText.setAttribute('y', spot.y + (spot.y < 200 ? 70 : 76));
+                    evText.setAttribute('font-size', '14');
+                    evText.setAttribute('text-anchor', 'middle');
+                    evText.textContent = '⚡';
+                    g.appendChild(evText);
+                }
+
+                group.appendChild(g);
+            });
+
+            updateHeaderMetrics();
+        }
+
+        function drawRouteToSpot(spot) {
+            const routeGroup = document.getElementById('route-group');
+            routeGroup.innerHTML = '';
+
+            if (!spot) return null;
+
+            const isTop = spot.y < 200;
+            const targetX = spot.x + spot.width / 2;
+
+            let d = `M 80 580 L 80 415 L 450 415`;
+            if (isTop) {
+                d += ` L 450 205 L ${targetX} 205 L ${targetX} ${spot.y + spot.height}`;
             } else {
-                document.getElementById('wizardStep1').classList.add('hidden');
-                document.getElementById('wizardStep2').classList.remove('hidden');
+                d += ` L ${targetX} 415 L ${targetX} ${spot.y}`;
+            }
+
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('id', 'active-route-path');
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#60A5FA');
+            path.setAttribute('stroke-width', '5');
+            path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('stroke-linejoin', 'round');
+            path.setAttribute('class', 'animated-route-line');
+            path.setAttribute('marker-end', 'url(#arrow)');
+
+            routeGroup.appendChild(path);
+
+            renderNavSteps(spot);
+            return path;
+        }
+
+        function startCarNavigationAnimation() {
+            if (!selectedSpotId) return;
+            const spot = spotsData.find(s => s.id === selectedSpotId);
+            if (spot.status === 'occupied') {
+                showToast('Esta vaga já está OCUPADA!', 'danger');
+                return;
+            }
+
+            activeNavigationSpot = spot;
+            const path = drawRouteToSpot(spot);
+            showToast(`Rota iniciada para ${spot.id}`, 'success');
+            
+            setTimeout(() => {
+                startCarAnimation();
+            }, 300);
+        }
+
+        function startCarAnimation() {
+            const path = document.getElementById('active-route-path');
+            const car = document.getElementById('animated-car');
+            const btnDrive = document.getElementById('btn-drive-anim');
+
+            if (!path || !car || isCarAnimating) return;
+
+            isCarAnimating = true;
+            car.classList.remove('hidden');
+            if (btnDrive) btnDrive.disabled = true;
+
+            const pathLength = path.getTotalLength();
+            let start = null;
+            const duration = 3200; // 3.2 seconds drive animation
+
+            function animate(timestamp) {
+                if (!start) start = timestamp;
+                const progress = (timestamp - start) / duration;
+
+                if (progress < 1) {
+                    const currentLen = progress * pathLength;
+                    const p1 = path.getPointAtLength(currentLen);
+                    const p2 = path.getPointAtLength(Math.min(currentLen + 2, pathLength));
+
+                    // Calculate Angle
+                    const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI) + 90;
+
+                    car.setAttribute('transform', `translate(${p1.x}, ${p1.y}) rotate(${angle})`);
+                    requestAnimationFrame(animate);
+                } else {
+                    // Reached Spot
+                    const finalPoint = path.getPointAtLength(pathLength);
+                    car.setAttribute('transform', `translate(${finalPoint.x}, ${finalPoint.y}) rotate(0)`);
+                    isCarAnimating = false;
+                    if (btnDrive) btnDrive.disabled = false;
+
+                    document.getElementById('nav-status-desc').textContent = '✅ Carro Estacionado com Sucesso!';
+                    showToast('Você chegou à sua vaga!', 'success');
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function updatePricing() {
+            const slider = document.getElementById('time-slider');
+            selectedDurationHours = parseInt(slider.value);
+            
+            document.getElementById('duration-display').textContent = `${selectedDurationHours} ${selectedDurationHours === 1 ? 'Hora' : 'Horas'}`;
+            
+            const total = selectedDurationHours * hourlyRate;
+            document.getElementById('total-price-display').textContent = `R$ ${total},00`;
+
+            if (selectedSpotId) {
+                document.getElementById('spot-card-price-tag').textContent = `R$ ${total},00 (${selectedDurationHours}h)`;
             }
         }
 
-        function confirmEntryWizard() {
-            closeModal('entryWizardModal');
-
-            let mapFilter = selectedTypePref;
-            if (selectedTypePref === 'fam') mapFilter = 'all';
-            setFilter(mapFilter);
-
-            document.getElementById('ticketTimeEstimate').textContent = selectedTimePref.label;
-            document.getElementById('ticketFeeEstimate').textContent = `R$ ${selectedTimePref.fee.toFixed(2).replace('.', ',')}`;
-
-            let prefLabel = 'Qualquer Vaga';
-            if (selectedTypePref === 'pref') prefLabel = 'Vaga PCD';
-            if (selectedTypePref === 'elec') prefLabel = 'Carro Elétrico';
-            if (selectedTypePref === 'fam') prefLabel = 'Gestante / Família';
-
-            document.getElementById('summaryPreferencesText').textContent = `${prefLabel} • ${selectedTimePref.label} (Est. R$ ${selectedTimePref.fee},00)`;
-
-            autoSelectBestSpot();
+        function quickReserveFreeSpot() {
+            const freeSpots = spotsData.filter(s => s.floor === currentFloor && s.status === 'free');
+            if (freeSpots.length === 0) {
+                showToast('Nenhuma vaga livre no piso atual!', 'danger');
+                return;
+            }
+            selectSpot(freeSpots[0].id);
+            showToast(`Vaga livre ${freeSpots[0].id} selecionada!`, 'success');
         }
 
-        function autoSelectBestSpot() {
-            const spots = parkingData[currentFloor];
-            const matchingSpot = spots.find(s => !s.occupied && (
-                activeFilter === 'all' || 
-                (activeFilter === 'pref' && s.type === 'Preferencial') ||
-                (activeFilter === 'elec' && s.type === 'Elétrico')
-            ));
+        function selectSpot(spotId) {
+            if (!spotId) return;
+            selectedSpotId = spotId;
+            const spot = spotsData.find(s => s.id === spotId);
+            if (!spot) return;
 
-            if (matchingSpot) {
-                selectSpot(matchingSpot);
+            const card = document.getElementById('selected-spot-card');
+            document.getElementById('spot-card-code').textContent = spot.id;
+            document.getElementById('spot-card-sector').textContent = spot.sector;
+
+            const badge = document.getElementById('spot-card-badge');
+            if (spot.status === 'free') {
+                badge.textContent = 'LIVRE';
+                badge.className = 'px-3 py-1 text-xs font-black rounded-lg bg-emerald-400 text-slate-950 shadow';
+            } else {
+                badge.textContent = 'OCUPADA';
+                badge.className = 'px-3 py-1 text-xs font-black rounded-lg bg-rose-500 text-white shadow';
             }
+
+            let typeText = '<i class="fa-solid fa-car"></i> Vaga Padrão';
+            if (spot.type === 'pcd') typeText = '<i class="fa-solid fa-wheelchair text-cyan-300"></i> Vaga PCD';
+            if (spot.type === 'eletrico') typeText = '<i class="fa-solid fa-bolt text-violet-300"></i> Carro Elétrico';
+
+            document.getElementById('spot-card-type').innerHTML = typeText;
+            
+            const total = selectedDurationHours * hourlyRate;
+            document.getElementById('spot-card-price-tag').textContent = `R$ ${total},00 (${selectedDurationHours}h)`;
+
+            card.classList.remove('hidden');
+            renderSpots();
+            drawRouteToSpot(spot);
+        }
+
+        function renderNavSteps(spot) {
+            const panel = document.getElementById('nav-guidance-panel');
+            document.getElementById('nav-target-code').textContent = spot.id;
+
+            const steps = [
+                `Entre no Portal Principal do Piso E${spot.floor}`,
+                `Siga as setas iluminadas no piso até o corredor ${spot.sector.split('-')[0]}`,
+                `Estacione na Vaga ${spot.id} com sensor LED aceso no teto.`
+            ];
+
+            document.getElementById('nav-steps-container').innerHTML = steps.map((st, i) => `
+                <div class="flex items-center gap-2 text-slate-800 font-medium">
+                    <span class="w-5 h-5 rounded-full bg-brand-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0 shadow-sm">${i+1}</span>
+                    <span>${st}</span>
+                </div>
+            `).join('');
+
+            panel.classList.remove('hidden');
+        }
+
+        function cancelNavigation() {
+            activeNavigationSpot = null;
+            document.getElementById('route-group').innerHTML = '';
+            document.getElementById('nav-guidance-panel').classList.add('hidden');
+            document.getElementById('animated-car').classList.add('hidden');
         }
 
         function switchFloor(floorNum) {
             currentFloor = floorNum;
-            selectedSpot = null;
+            document.getElementById('active-floor-label').textContent = `Piso E${floorNum}`;
+            document.getElementById('map-floor-title').textContent = `PISO E${floorNum} • MAPA TÁTICO`;
 
-            const btnG1 = document.getElementById('btnG1');
-            const btnG2 = document.getElementById('btnG2');
-            
-            document.querySelectorAll('.current-floor-label').forEach(el => el.textContent = floorNum);
+            const b1 = document.getElementById('btn-floor-1');
+            const b2 = document.getElementById('btn-floor-2');
 
             if (floorNum === 1) {
-                btnG1.className = "flex-1 py-1.5 rounded-lg text-xs font-bold transition text-white bg-blue-600 shadow-sm text-center";
-                btnG2.className = "flex-1 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 text-center";
+                b1.className = 'py-2 px-3 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-sm';
+                b2.className = 'py-2 px-3 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-brand-700';
             } else {
-                btnG2.className = "flex-1 py-1.5 rounded-lg text-xs font-bold transition text-white bg-blue-600 shadow-sm text-center";
-                btnG1.className = "flex-1 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900 text-center";
+                b2.className = 'py-2 px-3 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-sm';
+                b1.className = 'py-2 px-3 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-brand-700';
             }
 
-            clearSelection();
-            renderFloor(floorNum);
+            renderSpots();
+            cancelNavigation();
         }
 
-        function setFilter(filterType) {
-            activeFilter = filterType;
+        function simulateToggleSpot(spotId) {
+            if (!spotId) return;
+            const spot = spotsData.find(s => s.id === spotId);
+            if (!spot) return;
+
+            spot.status = (spot.status === 'free') ? 'occupied' : 'free';
+            showToast(`Sensor Teto #${spot.id}: agora está ${spot.status === 'occupied' ? 'OCUPADA' : 'LIVRE'}`, 'info');
+
+            selectSpot(spot.id);
+            renderSpots();
+        }
+
+        function toggleSimulationMode() {
+            isSimulating = !isSimulating;
+            const btn = document.getElementById('nav-sim-btn');
+
+            if (isSimulating) {
+                btn.className = 'flex flex-col items-center gap-0.5 text-rose-600 font-extrabold text-[10px] animate-pulse';
+                simInterval = setInterval(() => {
+                    const idx = Math.floor(Math.random() * spotsData.length);
+                    spotsData[idx].status = spotsData[idx].status === 'free' ? 'occupied' : 'free';
+                    renderSpots();
+                }, 1800);
+                showToast('Simulação automática dos sensores ativada!', 'info');
+            } else {
+                clearInterval(simInterval);
+                btn.className = 'flex flex-col items-center gap-0.5 text-slate-500 hover:text-brand-600 font-extrabold text-[10px]';
+                showToast('Simulação pausada.', 'info');
+            }
+        }
+
+        function updateHeaderMetrics() {
+            const free = spotsData.filter(s => s.status === 'free').length;
+            const total = spotsData.length;
+            const rate = Math.round(((total - free) / total) * 100);
+
+            document.getElementById('stat-free-header').textContent = free;
+            document.getElementById('stat-rate-header').textContent = `${rate}%`;
+        }
+
+        function resetView() {
+            cancelNavigation();
+            selectedSpotId = null;
+            document.getElementById('selected-spot-card').classList.add('hidden');
+            renderSpots();
+        }
+
+        function generateTicketForCurrentTarget() {
+            if (!selectedSpotId) return;
+
+            const spot = spotsData.find(s => s.id === selectedSpotId);
+            document.getElementById('ticket-spot-id').textContent = spot.id;
+            document.getElementById('ticket-floor').textContent = `Piso E${spot.floor}`;
+            document.getElementById('ticket-duration').textContent = `${selectedDurationHours} Horas`;
             
-            ['all', 'free', 'pref', 'elec'].forEach(f => {
-                const btn = document.getElementById('filter' + f.charAt(0).toUpperCase() + f.slice(1));
-                if (btn) {
-                    if (f === filterType) {
-                        btn.className = "px-3 py-1 rounded-lg bg-blue-600 text-white font-bold shrink-0 shadow-sm";
-                    } else {
-                        btn.className = "px-3 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 shrink-0 flex items-center gap-1.5";
+            const total = selectedDurationHours * hourlyRate;
+            document.getElementById('ticket-price').textContent = `R$ ${total},00`;
+
+            drawSimulatedQRCode();
+            document.getElementById('ticket-modal').classList.remove('hidden');
+        }
+
+        function drawSimulatedQRCode() {
+            const canvas = document.getElementById('qr-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = 120;
+            canvas.height = 120;
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, 120, 120);
+
+            ctx.fillStyle = '#1E3A8A';
+            const size = 8;
+            for (let r = 0; r < 15; r++) {
+                for (let c = 0; c < 15; c++) {
+                    if (Math.random() > 0.35 || (r < 3 && c < 3) || (r < 3 && c > 11)) {
+                        ctx.fillRect(c * size, r * size, size, size);
                     }
                 }
-            });
-
-            renderFloor(currentFloor);
-        }
-
-        function renderFloor(floorNum) {
-            const topGrid = document.getElementById('topRowGrid');
-            const middleGrid = document.getElementById('middleRowGrid');
-            const bottomGrid = document.getElementById('bottomRowGrid');
-
-            topGrid.innerHTML = '';
-            middleGrid.innerHTML = '';
-            bottomGrid.innerHTML = '';
-
-            const spots = parkingData[floorNum];
-            let freeCount = 0;
-
-            spots.forEach(spot => {
-                if (!spot.occupied) freeCount++;
-
-                let isFilteredOut = false;
-                if (activeFilter === 'free' && spot.occupied) isFilteredOut = true;
-                if (activeFilter === 'pref' && spot.type !== 'Preferencial') isFilteredOut = true;
-                if (activeFilter === 'elec' && spot.type !== 'Elétrico') isFilteredOut = true;
-
-                const spotElement = createSpotCard(spot, isFilteredOut);
-
-                if (spot.row === 'top') {
-                    topGrid.appendChild(spotElement);
-                } else if (spot.row === 'middle') {
-                    middleGrid.appendChild(spotElement);
-                } else {
-                    bottomGrid.appendChild(spotElement);
-                }
-            });
-
-            document.getElementById('freeSpotsCount').textContent = freeCount;
-        }
-
-        function createSpotCard(spot, isFilteredOut) {
-            const card = document.createElement('div');
-            const isSelected = selectedSpot && selectedSpot.id === spot.id;
-
-            let cardStyle = '';
-            let sensorLed = '';
-            let iconMarkup = '';
-
-            if (spot.type === 'Preferencial') {
-                iconMarkup = '<i class="fa-solid fa-wheelchair text-blue-600 text-[10px]"></i>';
-            } else if (spot.type === 'Elétrico') {
-                iconMarkup = '<i class="fa-solid fa-bolt text-amber-500 text-[10px]"></i>';
-            } else if (spot.type === 'Gestante') {
-                iconMarkup = '<i class="fa-solid fa-baby-carriage text-pink-500 text-[10px]"></i>';
-            }
-
-            if (isFilteredOut) {
-                cardStyle = 'bg-slate-100 border-slate-200 opacity-30 pointer-events-none';
-                sensorLed = 'bg-slate-400';
-            } else if (isSelected) {
-                if (spot.reserved) {
-                    cardStyle = 'bg-amber-50 border-2 border-amber-500 shadow-md scale-[1.03] z-20';
-                    sensorLed = 'bg-amber-500 sensor-amber-pulse';
-                } else {
-                    cardStyle = 'bg-blue-50 border-2 border-blue-600 shadow-md scale-[1.03] z-20';
-                    sensorLed = 'bg-emerald-500 sensor-green-pulse';
-                }
-            } else if (spot.reserved) {
-                cardStyle = 'bg-amber-50/70 border border-amber-300 text-amber-900 cursor-pointer';
-                sensorLed = 'bg-amber-500 sensor-amber-pulse';
-            } else if (spot.occupied) {
-                cardStyle = 'bg-rose-50/60 border border-rose-200 text-rose-400/80 cursor-not-allowed';
-                sensorLed = 'bg-rose-500';
-            } else {
-                cardStyle = 'bg-emerald-50/70 border border-emerald-300 text-emerald-900 hover:bg-emerald-100/70 cursor-pointer transition shadow-sm';
-                sensorLed = 'bg-emerald-500 sensor-green-pulse';
-            }
-
-            card.className = `relative rounded-xl p-1.5 flex flex-col justify-between h-[52px] ${cardStyle} transition-all duration-200`;
-
-            if (!spot.occupied && !isFilteredOut) {
-                card.onclick = () => selectSpot(spot);
-            }
-
-            let statusText = 'LIVRE';
-            let statusColor = 'text-emerald-600';
-
-            if (spot.occupied) {
-                statusText = 'Ocupada';
-                statusColor = 'text-rose-400';
-            } else if (spot.reserved) {
-                statusText = 'RESERVADA';
-                statusColor = 'text-amber-600 font-extrabold';
-            }
-
-            card.innerHTML = `
-                <!-- Sensor Overhead LED Indicator -->
-                <div class="absolute -top-1 right-1 bg-white text-slate-800 px-1 py-0.2 rounded-full shadow border border-slate-200 flex items-center gap-0.5 z-30">
-                    <span class="w-1.5 h-1.5 rounded-full ${sensorLed}"></span>
-                </div>
-
-                <div class="flex justify-between items-center">
-                    <span class="font-extrabold text-[11px] text-slate-900 tracking-wide font-mono">${spot.code}</span>
-                    ${iconMarkup}
-                </div>
-
-                <div class="flex justify-between items-end text-[8px]">
-                    <span class="font-bold ${statusColor}">
-                        ${statusText}
-                    </span>
-                    ${spot.occupied ? '<i class="fa-solid fa-car text-slate-300 text-[9px]"></i>' : (spot.reserved ? '<i class="fa-solid fa-bookmark text-amber-500 text-[9px]"></i>' : '')}
-                </div>
-            `;
-
-            return card;
-        }
-
-        function selectSpot(spot) {
-            selectedSpot = spot;
-            isRouteNavigating = false;
-            renderFloor(currentFloor);
-
-            document.getElementById('noSelectionView').classList.add('hidden');
-            document.getElementById('selectionView').classList.remove('hidden');
-            document.getElementById('selectionView').classList.add('flex');
-
-            document.getElementById('selectedSpotCode').textContent = spot.code;
-            document.getElementById('selectedSpotSector').textContent = `${spot.sector} - Piso G${currentFloor}`;
-            document.getElementById('selectedSpotType').textContent = spot.reserved ? 'Reservada' : spot.type;
-
-            const approxMeters = Math.round(10 + Math.abs(ENTRANCE_POINT.y - spot.y) * 0.05 + Math.abs(ENTRANCE_POINT.x - spot.x) * 0.05);
-            document.getElementById('selectedSpotDistance').innerHTML = `<i class="fa-solid fa-route"></i> Rota calculada (~${approxMeters}m da Entrada)`;
-
-            // Reset buttons
-            const btnConfirm = document.getElementById('btnConfirmRoute');
-            btnConfirm.className = "flex-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 px-3 rounded-xl shadow-md shadow-blue-600/20 transition active:scale-[0.98] flex items-center justify-center gap-2 text-xs";
-            document.getElementById('btnConfirmText').textContent = "Confirmar & Ir";
-            
-            const btnReserve = document.getElementById('btnReserveSpot');
-            if (spot.reserved) {
-                btnReserve.className = "flex-1 bg-amber-600 text-white font-bold py-3 px-3 rounded-xl shadow-sm transition text-xs opacity-90";
-                document.getElementById('btnReserveText').textContent = "Reservada!";
-                document.getElementById('reservationTimerBanner').classList.remove('hidden');
-            } else {
-                btnReserve.className = "flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-3 rounded-xl shadow-md shadow-amber-500/20 transition active:scale-[0.98] flex items-center justify-center gap-2 text-xs";
-                document.getElementById('btnReserveText').textContent = "Reservar (15 min)";
-                document.getElementById('reservationTimerBanner').classList.add('hidden');
-            }
-
-            document.getElementById('btnGuidanceSteps').classList.add('hidden');
-
-            drawRouteToSpot(spot, false);
-        }
-
-        function reserveSpot() {
-            if (!selectedSpot) return;
-
-            selectedSpot.reserved = true;
-            renderFloor(currentFloor);
-
-            isRouteNavigating = true;
-            drawRouteToSpot(selectedSpot, true);
-
-            const btnReserve = document.getElementById('btnReserveSpot');
-            btnReserve.className = "flex-1 bg-amber-600 text-white font-bold py-3 px-3 rounded-xl shadow-sm transition text-xs opacity-90";
-            document.getElementById('btnReserveText').textContent = "Reservada!";
-
-            document.getElementById('reservationTimerBanner').classList.remove('hidden');
-            document.getElementById('btnGuidanceSteps').classList.remove('hidden');
-
-            const btnConfirm = document.getElementById('btnConfirmRoute');
-            btnConfirm.className = "flex-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 px-3 rounded-xl shadow-md shadow-blue-600/20 transition active:scale-[0.98] flex items-center justify-center gap-2 text-xs";
-            document.getElementById('btnConfirmText').textContent = "Ver Passos";
-
-            document.getElementById('selectedSpotDistance').innerHTML = `<i class="fa-solid fa-lightbulb text-amber-500"></i> Luz em cima da vaga alterada para LARANJA!`;
-        }
-
-        function confirmSpotAndStartRoute() {
-            if (!selectedSpot) return;
-
-            if (!isRouteNavigating) {
-                isRouteNavigating = true;
-                drawRouteToSpot(selectedSpot, true);
-
-                const btnConfirm = document.getElementById('btnConfirmRoute');
-                btnConfirm.className = "flex-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 px-3 rounded-xl shadow-md shadow-blue-600/20 transition active:scale-[0.98] flex items-center justify-center gap-2 text-xs";
-                document.getElementById('btnConfirmText').textContent = "Instruções da Rota";
-                document.getElementById('btnGuidanceSteps').classList.remove('hidden');
-
-                document.getElementById('selectedSpotDistance').innerHTML = `<i class="fa-solid fa-location-arrow text-blue-600 animate-pulse"></i> Siga a seta da Entrada até o local!`;
-            } else {
-                startGuidance();
             }
         }
 
-        function drawRouteToSpot(spot, animateArrow = false) {
-            const routePath = document.getElementById('routePath');
-            const routePathBg = document.getElementById('routePathBg');
-            const arrowGroup = document.getElementById('animatedArrowGroup');
-            const arrowMotion = document.getElementById('arrowMotion');
-            
-            const startX = ENTRANCE_POINT.x; // Bottom Right (310)
-            const startY = ENTRANCE_POINT.y; // Bottom Entrance (530)
-            
-            let pathData = "";
-
-            if (spot.row === 'bottom') {
-                // Route to Bottom Row spots
-                pathData = `M ${startX} ${startY} L ${startX} 400 L ${spot.x} 400 L ${spot.x} ${spot.y}`;
-            } else if (spot.row === 'middle') {
-                // Route to Middle Central Island
-                pathData = `M ${startX} ${startY} L ${startX} 390 L 30 390 L 30 260 L ${spot.x} 260`;
-            } else {
-                // Route to Top Row spots
-                pathData = `M ${startX} ${startY} L ${startX} 390 L 30 390 L 30 170 L ${spot.x} 170 L ${spot.x} ${spot.y + 20}`;
-            }
-            
-            routePath.setAttribute('d', pathData);
-            routePathBg.setAttribute('d', pathData);
-
-            if (animateArrow) {
-                arrowGroup.classList.remove('hidden');
-                arrowMotion.setAttribute('path', pathData);
-                if (arrowMotion.beginElement) {
-                    arrowMotion.beginElement();
-                }
-            } else {
-                arrowGroup.classList.add('hidden');
-            }
+        function closeTicketModal() {
+            document.getElementById('ticket-modal').classList.add('hidden');
         }
 
-        function clearSelection() {
-            selectedSpot = null;
-            isRouteNavigating = false;
-
-            document.getElementById('routePath').setAttribute('d', '');
-            document.getElementById('routePathBg').setAttribute('d', '');
-            
-            const arrowGroup = document.getElementById('animatedArrowGroup');
-            if (arrowGroup) arrowGroup.classList.add('hidden');
-
-            document.getElementById('reservationTimerBanner').classList.add('hidden');
-            document.getElementById('noSelectionView').classList.remove('hidden');
-            document.getElementById('selectionView').classList.add('hidden');
-            document.getElementById('selectionView').classList.remove('flex');
-            renderFloor(currentFloor);
+        function toggleInfoModal() {
+            document.getElementById('info-modal').classList.toggle('hidden');
         }
 
-        function simulateOccupancyChange() {
-            const currentSpots = parkingData[currentFloor];
-            const randomIndex = Math.floor(Math.random() * currentSpots.length);
-            currentSpots[randomIndex].occupied = !currentSpots[randomIndex].occupied;
-            if (currentSpots[randomIndex].occupied) {
-                currentSpots[randomIndex].reserved = false;
-            }
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
 
-            if (selectedSpot && selectedSpot.id === currentSpots[randomIndex].id && currentSpots[randomIndex].occupied) {
-                clearSelection();
-            }
+            let bg = 'bg-brand-900 text-white';
+            if (type === 'success') bg = 'bg-emerald-600 text-white';
+            if (type === 'danger') bg = 'bg-rose-600 text-white';
 
-            renderFloor(currentFloor);
-            if (selectedSpot) drawRouteToSpot(selectedSpot, isRouteNavigating);
+            toast.className = `p-3 rounded-xl ${bg} shadow-xl text-xs font-bold flex items-center gap-2 pointer-events-auto transition duration-300 border border-white/20`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
-        function startGuidance() {
-            if (!selectedSpot) return;
-
-            const modal = document.getElementById('guidanceModal');
-            const stepsContainer = document.getElementById('guidanceSteps');
-
-            document.getElementById('guidanceFloorBadge').textContent = `PISO G${currentFloor}`;
-
-            stepsContainer.innerHTML = `
-                <div class="flex items-start gap-3">
-                    <div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-xs shrink-0 mt-0.5">1</div>
-                    <div>
-                        <div class="text-xs font-bold text-slate-900">Entre pelo Acesso Principal (Seta Azul)</div>
-                        <div class="text-[11px] text-slate-500">Avance a partir da entrada inferior direita no Piso G${currentFloor}.</div>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-3">
-                    <div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-black text-xs shrink-0 mt-0.5">2</div>
-                    <div>
-                        <div class="text-xs font-bold text-slate-900">Siga o trajeto até a ${selectedSpot.sector}</div>
-                        <div class="text-[11px] text-slate-500">Procure pela vaga identificada com o código <strong class="text-blue-600">${selectedSpot.code}</strong>.</div>
-                    </div>
-                </div>
-
-                <div class="flex items-start gap-3">
-                    <div class="w-6 h-6 rounded-full bg-slate-200 border border-slate-300 text-slate-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</div>
-                    <div>
-                        <div class="text-xs font-bold text-slate-900">Identifique o LED no teto</div>
-                        <div class="text-[11px] text-slate-500">A luz ${selectedSpot.reserved ? 'LARANJA (Reservada)' : 'VERDE (Livre)'} no sensor da vaga confirmará seu estacionamento.</div>
-                    </div>
-                </div>
-            `;
-
-            modal.classList.remove('hidden');
-        }
-
-        function finishGuidance() {
-            if (selectedSpot) {
-                selectedSpot.occupied = true;
-                clearSelection();
-            }
-            closeModal('guidanceModal');
-        }
-
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
+        window.onload = function() {
+            initSpotsData();
+            updatePricing();
+            renderSpots();
+            selectSpot('E1-A01');
+        };
     </script>
 </body>
 </html>
