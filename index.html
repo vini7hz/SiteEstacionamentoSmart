@@ -79,6 +79,9 @@
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 9999px; }
+
+        /* Input Plate uppercase */
+        #plate-input { text-transform: uppercase; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col bg-slate-200 text-slate-900 justify-center items-center">
@@ -86,7 +89,7 @@
     <!-- Mobile Frame Outer Container -->
     <div class="w-full max-w-md min-h-screen sm:min-h-[844px] bg-white shadow-2xl flex flex-col relative overflow-hidden sm:rounded-3xl border-0 sm:border border-blue-200">
 
-        <!-- Mobile Header (Blue & White Theme) -->
+        <!-- Mobile Header -->
         <header class="bg-gradient-to-r from-brand-900 via-brand-800 to-brand-600 text-white p-4 pt-5 rounded-b-2xl shadow-md z-30">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
@@ -97,11 +100,11 @@
                         <div class="flex items-center gap-1.5">
                             <h1 class="font-extrabold text-base tracking-tight leading-none text-white">Estádio Smart Park</h1>
                             <span class="px-2 py-0.5 text-[9px] font-extrabold bg-emerald-400 text-slate-950 rounded-full flex items-center gap-1 shadow-sm">
-                                <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span> SENSOR ONLINE
+                                <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span> ONLINE
                             </span>
                         </div>
                         <p class="text-[11px] text-blue-100 mt-1 flex items-center gap-1">
-                            <i class="fa-solid fa-location-dot text-blue-200"></i> Arena Futebol • Estacionamento Indoor
+                            <i class="fa-solid fa-car text-blue-200"></i> Placa: <span id="header-plate-display" class="font-bold mono-font">---</span>
                         </p>
                     </div>
                 </div>
@@ -118,8 +121,8 @@
                     <span class="text-base font-extrabold text-white" id="stat-free-header">0</span>
                 </div>
                 <div class="bg-white/10 rounded-xl p-2 backdrop-blur-sm border border-white/10">
-                    <span class="text-[10px] text-blue-100 block uppercase font-bold">Tarifa Base</span>
-                    <span class="text-base font-extrabold text-amber-300">R$ 15/h</span>
+                    <span class="text-[10px] text-blue-100 block uppercase font-bold">Tempo</span>
+                    <span class="text-base font-extrabold text-amber-300" id="header-time-display">0h</span>
                 </div>
                 <div class="bg-white/10 rounded-xl p-2 backdrop-blur-sm border border-white/10">
                     <span class="text-[10px] text-blue-100 block uppercase font-bold">Ocupação</span>
@@ -131,11 +134,11 @@
         <!-- Main Scrollable Mobile Area -->
         <main class="flex-1 overflow-y-auto p-3 space-y-3 pb-24">
 
-            <!-- Selection and Pricing Box -->
+            <!-- Selection Control Panel -->
             <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-blue-100 space-y-3">
                 <div class="flex items-center justify-between">
                     <h2 class="text-xs font-bold text-brand-900 uppercase tracking-wider flex items-center gap-1.5">
-                        <i class="fa-solid fa-sliders text-brand-600"></i> Seleção & Duração
+                        <i class="fa-solid fa-layer-group text-brand-600"></i> Localização
                     </h2>
                     <span class="text-[10px] font-extrabold text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-200">
                         Piso Ativo: <span id="active-floor-label">Piso E1</span>
@@ -152,40 +155,11 @@
                     </button>
                 </div>
 
-                <!-- Time and Price Selector -->
-                <div class="bg-gradient-to-br from-blue-50 to-indigo-50/50 p-3 rounded-xl border border-blue-100 space-y-2">
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="font-bold text-slate-700 flex items-center gap-1.5">
-                            <i class="fa-regular fa-clock text-brand-600"></i> Tempo de Estadia:
-                        </span>
-                        <span class="font-extrabold text-brand-800 text-sm bg-white px-2.5 py-0.5 rounded-lg border border-blue-200 shadow-sm" id="duration-display">3 Horas</span>
-                    </div>
-
-                    <input type="range" id="time-slider" min="1" max="6" value="3" step="1" oninput="updatePricing()" class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-brand-600">
-
-                    <div class="flex justify-between items-center text-[10px] text-slate-500 font-semibold pt-0.5">
-                        <span>1 Hora (R$15)</span>
-                        <span>Tempo de Jogo (3h)</span>
-                        <span>6 Horas (R$90)</span>
-                    </div>
-
-                    <!-- Calculated Total Box -->
-                    <div class="mt-2 pt-2 border-t border-blue-200/60 flex items-center justify-between">
-                        <div>
-                            <span class="text-[10px] uppercase font-bold text-slate-500 block">Total Estimado</span>
-                            <span class="text-xl font-black text-brand-700 leading-none" id="total-price-display">R$ 45,00</span>
-                        </div>
-                        <button onclick="quickReserveFreeSpot()" class="px-3.5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-brand-500/20 transition flex items-center gap-1.5 active:scale-95">
-                            <i class="fa-solid fa-bolt"></i>
-                            <span>Escolha Rápida</span>
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Spot Select Dropdown -->
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                        Selecione a Vaga Desejada:
+                <div class="pt-2">
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1 flex items-center justify-between">
+                        <span>Selecione a Vaga:</span>
+                        <button onclick="quickReserveFreeSpot()" class="text-brand-600 bg-brand-50 px-2 py-0.5 rounded text-[9px] border border-brand-200">Busca Automática</button>
                     </label>
                     <select id="spot-dropdown" onchange="selectSpot(this.value)" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl p-2.5 font-bold focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none">
                         <!-- Injected via JS -->
@@ -208,14 +182,14 @@
 
                 <div class="mt-3 pt-2.5 border-t border-white/15 flex items-center justify-between text-xs text-blue-100">
                     <span id="spot-card-type"><i class="fa-solid fa-car"></i> Vaga Padrão</span>
-                    <span id="spot-card-price-tag" class="font-extrabold text-amber-300">R$ 45,00 (3h)</span>
+                    <span id="spot-card-price-tag" class="font-extrabold text-amber-300">R$ 45,00</span>
                 </div>
 
                 <!-- Action buttons -->
                 <div class="mt-3 grid grid-cols-2 gap-2">
                     <button onclick="startCarNavigationAnimation()" class="py-2.5 px-3 bg-brand-500 hover:bg-brand-400 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
-                        <i class="fa-solid fa-car-side text-sm"></i>
-                        <span>Dirigir até Vaga</span>
+                        <i class="fa-solid fa-location-arrow text-sm"></i>
+                        <span>Gerar Rota</span>
                     </button>
                     <button onclick="simulateToggleSpot(selectedSpotId)" class="py-2.5 px-3 bg-white/15 hover:bg-white/25 text-white font-bold text-xs rounded-xl border border-white/20 transition flex items-center justify-center gap-1.5 active:scale-95" title="Simular detecção pelo sensor de teto">
                         <i class="fa-solid fa-satellite-dish text-blue-200"></i>
@@ -252,23 +226,37 @@
                                 <stop offset="100%" stop-color="#0F172A"/>
                             </linearGradient>
 
-                            <!-- Spot Background Pattern -->
+                            <!-- Spot Background Pattern for Free Spots -->
                             <linearGradient id="spotFreeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stop-color="#064E3B" stop-opacity="0.8"/>
-                                <stop offset="100%" stop-color="#022C22" stop-opacity="0.9"/>
+                                <stop offset="0%" stop-color="#064E3B" stop-opacity="0.6"/>
+                                <stop offset="100%" stop-color="#022C22" stop-opacity="0.8"/>
                             </linearGradient>
-                            <linearGradient id="spotOccupiedGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stop-color="#881337" stop-opacity="0.8"/>
-                                <stop offset="100%" stop-color="#4C0519" stop-opacity="0.9"/>
-                            </linearGradient>
+                            
+                            <!-- Occupied Pattern -->
+                            <pattern id="diagonalHatch" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                                <line x1="0" y1="0" x2="0" y2="10" stroke="#334155" stroke-width="2" />
+                            </pattern>
+
+                            <!-- SVGs for Cars Parked -->
+                            <g id="parked-car-model">
+                                <rect x="8" y="10" width="34" height="75" rx="8" fill="#475569" stroke="#1E293B" stroke-width="2"/>
+                                <!-- Windshields -->
+                                <rect x="12" y="25" width="26" height="15" rx="3" fill="#1E293B"/>
+                                <rect x="12" y="55" width="26" height="12" rx="2" fill="#0F172A"/>
+                                <!-- Lights -->
+                                <rect x="10" y="10" width="8" height="4" rx="2" fill="#FDE047"/>
+                                <rect x="32" y="10" width="8" height="4" rx="2" fill="#FDE047"/>
+                                <rect x="10" y="81" width="8" height="4" rx="2" fill="#EF4444"/>
+                                <rect x="32" y="81" width="8" height="4" rx="2" fill="#EF4444"/>
+                            </g>
                         </defs>
 
                         <!-- Outer Garage Floor Boundary -->
                         <rect x="10" y="10" width="880" height="600" rx="24" fill="#090D16" stroke="#1E3A8A" stroke-width="4" />
 
                         <!-- Parking Aisles and Roads -->
-                        <!-- Vertical Main Corridor -->
-                        <rect x="410" y="30" width="80" height="560" fill="url(#laneGrad)" rx="10" stroke="#334155" stroke-width="2"/>
+                        <!-- Vertical Main Corridor (Centered) -->
+                        <rect x="410" y="30" width="80" height="570" fill="url(#laneGrad)" rx="10" stroke="#334155" stroke-width="2"/>
                         <line x1="450" y1="30" x2="450" y2="590" stroke="#60A5FA" stroke-width="2" stroke-dasharray="10 8" />
 
                         <!-- Horizontal North Corridor -->
@@ -281,33 +269,28 @@
 
                         <!-- Direction Arrows on Road -->
                         <g fill="#475569" opacity="0.6">
-                            <polygon points="450,80 440,100 460,100" />
-                            <polygon points="450,540 440,520 460,520" />
+                            <polygon points="450,120 440,140 460,140" />
+                            <polygon points="450,480 440,500 460,500" />
                             <polygon points="250,205 230,195 230,215" />
                             <polygon points="650,205 670,195 670,215" />
                         </g>
 
-                        <!-- Stadium Entrances Visual Badges -->
-                        <g transform="translate(450, 15)">
-                            <rect x="-90" y="-10" width="180" height="26" fill="#1E40AF" rx="8" stroke="#93C5FD" stroke-width="2"/>
-                            <text x="0" y="7" fill="#FFFFFF" text-anchor="middle" font-size="11" font-weight="800">
-                                🏟️ ACESSO NORTE (ARIBI)
+                        <!-- Garage Entry Point (Bottom Center) -->
+                        <g transform="translate(450, 580)">
+                            <rect x="-60" y="-14" width="120" height="30" fill="#2563EB" rx="8" stroke="#60A5FA" stroke-width="2"/>
+                            <text x="0" y="5" fill="#FFFFFF" text-anchor="middle" font-size="12" font-weight="900">
+                                🟢 ENTRADA
                             </text>
                         </g>
-
-                        <g transform="translate(450, 605)">
-                            <rect x="-90" y="-12" width="180" height="26" fill="#1E40AF" rx="8" stroke="#93C5FD" stroke-width="2"/>
-                            <text x="0" y="5" fill="#FFFFFF" text-anchor="middle" font-size="11" font-weight="800">
-                                🏟️ ACESSO SUL (PORTÃO B)
-                            </text>
+                        
+                        <!-- Stadium Acess Portals -->
+                        <g transform="translate(150, 20)">
+                            <rect x="-80" y="-10" width="160" height="24" fill="#1E40AF" rx="6" stroke="#93C5FD" stroke-width="1.5"/>
+                            <text x="0" y="6" fill="#FFFFFF" text-anchor="middle" font-size="10" font-weight="800">🏟️ ACESSO SETOR A</text>
                         </g>
-
-                        <!-- Garage Entry Point (Ramp) -->
-                        <g transform="translate(80, 580)">
-                            <rect x="-55" y="-14" width="110" height="28" fill="#2563EB" rx="8" stroke="#60A5FA" stroke-width="2"/>
-                            <text x="0" y="4" fill="#FFFFFF" text-anchor="middle" font-size="11" font-weight="900">
-                                🚗 ENTRADA
-                            </text>
+                        <g transform="translate(750, 20)">
+                            <rect x="-80" y="-10" width="160" height="24" fill="#1E40AF" rx="6" stroke="#93C5FD" stroke-width="1.5"/>
+                            <text x="0" y="6" fill="#FFFFFF" text-anchor="middle" font-size="10" font-weight="800">🏟️ ACESSO SETOR B</text>
                         </g>
 
                         <!-- Dynamic Group for Parking Spots -->
@@ -337,7 +320,7 @@
                 </div>
 
                 <!-- Map Legend -->
-                <div class="p-3 bg-slate-900 border-t border-slate-800 flex items-center justify-around text-[11px] font-bold text-slate-300">
+                <div class="p-3 bg-slate-900 border-t border-slate-800 flex flex-wrap items-center justify-around gap-2 text-[10px] sm:text-[11px] font-bold text-slate-300">
                     <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 border border-white/40"></span> Livre</span>
                     <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-rose-600 border border-white/40"></span> Ocupada</span>
                     <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-cyan-400 border border-white/40"></span> PCD</span>
@@ -362,14 +345,14 @@
                     </button>
                 </div>
 
-                <div id="nav-steps-container" class="space-y-1.5 text-xs">
+                <div id="nav-steps-container" class="space-y-1.5 text-xs mb-3">
                     <!-- Injected via JS -->
                 </div>
 
-                <div class="mt-3 grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-2">
                     <button onclick="startCarAnimation()" id="btn-drive-anim" class="py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
                         <i class="fa-solid fa-play"></i>
-                        <span>Simular Carro Dirigindo</span>
+                        <span>Simular Direção</span>
                     </button>
                     <button onclick="generateTicketForCurrentTarget()" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 active:scale-95">
                         <i class="fa-solid fa-ticket"></i>
@@ -398,50 +381,105 @@
 
     </div>
 
+    <!-- INITIAL CHECK-IN MODAL (Mandatory) -->
+    <div id="welcome-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl relative border border-blue-100 space-y-4 transform transition-all">
+            
+            <div class="text-center">
+                <div class="w-14 h-14 bg-brand-600 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-brand-500/30 mb-3">
+                    <i class="fa-solid fa-car-on text-2xl text-white"></i>
+                </div>
+                <h2 class="text-xl font-black text-slate-900 leading-tight">Bem-vindo ao<br><span class="text-brand-600">Smart Parking</span></h2>
+                <p class="text-xs text-slate-500 mt-1 font-medium">Informe os dados para iniciar sua reserva.</p>
+            </div>
+
+            <div class="space-y-3.5 mt-2">
+                <!-- Placa -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Placa do Veículo</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-id-card absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="plate-input" placeholder="ABC-1234" maxlength="8" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-brand-500 outline-none mono-font transition">
+                    </div>
+                </div>
+
+                <!-- Tipo de Vaga -->
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">Tipo de Vaga Preferencial</label>
+                    <select id="type-select" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-brand-500 outline-none transition appearance-none">
+                        <option value="comum">🚗 Vaga Comum</option>
+                        <option value="pcd">♿ Vaga Acessível (PCD)</option>
+                        <option value="eletrico">⚡ Veículo Elétrico</option>
+                    </select>
+                </div>
+
+                <!-- Tempo -->
+                <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">Tempo de Estadia</label>
+                        <span class="text-xs font-black text-brand-700 bg-white px-2 py-0.5 rounded border border-blue-200 shadow-sm" id="welcome-time-display">3 Horas</span>
+                    </div>
+                    <input type="range" id="welcome-time-slider" min="1" max="6" value="3" step="1" oninput="updateWelcomePrice()" class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-brand-600">
+                    <div class="flex justify-between items-center text-[9px] text-slate-500 font-bold mt-1">
+                        <span>1h</span>
+                        <span>Tempo Máx (6h)</span>
+                    </div>
+                </div>
+
+                <!-- Preço Dinâmico -->
+                <div class="flex items-center justify-between py-2 border-y border-slate-100">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Valor Estimado</span>
+                    <span class="text-2xl font-black text-emerald-600" id="welcome-price-display">R$ 45,00</span>
+                </div>
+            </div>
+
+            <button onclick="startSession()" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-black text-sm rounded-xl shadow-lg shadow-brand-500/30 transition flex items-center justify-center gap-2 active:scale-95">
+                <span>Acessar Estacionamento</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
     <!-- Ticket Digital Modal -->
     <div id="ticket-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-2xl relative border border-blue-100 text-center space-y-3">
             
-            <button onclick="closeTicketModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+            <button onclick="closeTicketModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition">
                 <i class="fa-solid fa-xmark text-sm"></i>
             </button>
 
-            <div class="inline-flex p-3 rounded-2xl bg-blue-50 text-brand-600 border border-blue-100">
+            <div class="inline-flex p-3 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100">
                 <i class="fa-solid fa-qrcode text-3xl"></i>
             </div>
 
             <div>
-                <span class="text-[9px] font-black uppercase tracking-widest text-brand-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">PASS DIGITAL SMART PARKING</span>
+                <span class="text-[9px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">PASS DIGITAL</span>
                 <h2 class="text-lg font-black text-slate-900 mt-1">Reserva Confirmada</h2>
             </div>
 
             <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 text-left space-y-1.5 text-xs">
                 <div class="flex justify-between items-center pb-1 border-b border-slate-200">
+                    <span class="text-slate-500 font-semibold">Veículo</span>
+                    <span class="font-black text-slate-800 text-sm mono-font" id="ticket-plate">---</span>
+                </div>
+                <div class="flex justify-between items-center pb-1 border-b border-slate-200">
                     <span class="text-slate-500 font-semibold">Vaga Reservada</span>
                     <span class="font-black text-brand-700 text-sm mono-font" id="ticket-spot-id">E1-A01</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-semibold">Piso</span>
-                    <span class="text-slate-800 font-bold" id="ticket-floor">Piso E1</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-slate-500 font-semibold">Tempo de Estadia</span>
                     <span class="text-slate-800 font-bold" id="ticket-duration">3 Horas</span>
                 </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-slate-500 font-semibold">Preço Total</span>
-                    <span class="text-brand-700 font-black" id="ticket-price">R$ 45,00</span>
+                <div class="flex justify-between items-center pt-1 border-t border-slate-200">
+                    <span class="text-slate-500 font-semibold">Total Pago</span>
+                    <span class="text-emerald-600 font-black text-sm" id="ticket-price">R$ 45,00</span>
                 </div>
             </div>
 
-            <div class="bg-white p-3 rounded-xl inline-block border border-slate-200 shadow-sm">
+            <div class="bg-white p-3 rounded-xl inline-block border border-slate-200 shadow-sm mt-1">
                 <canvas id="qr-canvas" class="w-32 h-32 mx-auto"></canvas>
             </div>
-            <p class="text-[10px] text-slate-400 mono-font">PASS ID: ESP-2026-STADIUM</p>
-
-            <button onclick="closeTicketModal()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs rounded-xl transition">
-                Concluído
-            </button>
+            <p class="text-[10px] text-slate-400 mono-font mt-1">ID: ESP-2026-STADIUM</p>
         </div>
     </div>
 
@@ -454,30 +492,30 @@
             </button>
 
             <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600">Sensores de Teto IoT</span>
-                <h2 class="text-lg font-black text-slate-900 mt-0.5">Como Funciona?</h2>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600">Arquitetura do Sistema</span>
+                <h2 class="text-lg font-black text-slate-900 mt-0.5">IoT & GPS Indoor</h2>
             </div>
 
             <div class="space-y-2.5 text-xs text-slate-600">
                 <div class="flex items-start gap-2.5 bg-blue-50/70 p-2.5 rounded-xl border border-blue-100">
                     <i class="fa-solid fa-satellite-dish text-brand-600 text-base mt-0.5"></i>
                     <div>
-                        <strong class="text-slate-800 block font-bold">Sensores ultrassônicos/ópticos</strong>
-                        Instalados no teto sobre cada vaga. A luz verde indica vaga livre e vermelha indica ocupada.
+                        <strong class="text-slate-800 block font-bold">Sensores Acústicos no Teto</strong>
+                        Monitoram a presença do veículo em tempo real. A luz reflete no painel do mapa na cor exata.
                     </div>
                 </div>
 
                 <div class="flex items-start gap-2.5 bg-blue-50/70 p-2.5 rounded-xl border border-blue-100">
                     <i class="fa-solid fa-route text-brand-600 text-base mt-0.5"></i>
                     <div>
-                        <strong class="text-slate-800 block font-bold">GPS Indoor & Animação</strong>
-                        O app calcula a rota exata do portão de entrada até a vaga selecionada, evitando congestionamento no estádio.
+                        <strong class="text-slate-800 block font-bold">Roteamento Dinâmico</strong>
+                        Calcula a melhor rota saindo do portão central até a vaga selecionada, evitando retenções.
                     </div>
                 </div>
             </div>
 
-            <button onclick="toggleInfoModal()" class="w-full py-2.5 bg-brand-600 text-white font-bold text-xs rounded-xl">
-                Entendi
+            <button onclick="toggleInfoModal()" class="w-full py-2.5 bg-brand-600 text-white font-bold text-xs rounded-xl mt-2">
+                Fechar
             </button>
         </div>
     </div>
@@ -490,8 +528,13 @@
         let currentFloor = 1;
         let selectedSpotId = null;
         let activeNavigationSpot = null;
-        let selectedDurationHours = 3;
+        
+        // User Session Data
+        let userPlate = '';
+        let userDurationHours = 3;
+        let userPrefType = 'comum';
         const hourlyRate = 15;
+
         let isSimulating = false;
         let simInterval = null;
         let isCarAnimating = false;
@@ -499,34 +542,39 @@
         const spotsData = [];
 
         function initSpotsData() {
-            // Floor 1 Spots
+            // Sector Start Coordinates:
+            // Top Left (Setor A): x=50, y=65
+            // Top Right (Setor B): x=530, y=65
+            // Bottom Left (Setor C): x=50, y=460
+            // Bottom Right (Setor D): x=530, y=460
+
             generateFloorSpots(1, [
-                { sector: 'Setor Norte - Portão A', prefix: 'A', startY: 65 },
-                { sector: 'Setor Leste - Portão B', prefix: 'B', startY: 65 },
-                { sector: 'Setor Sul - Portão C', prefix: 'C', startY: 460 },
-                { sector: 'Setor Oeste - Portão D', prefix: 'D', startY: 460 }
+                { sector: 'Setor A - Norte', prefix: 'A', startY: 65, isRight: false },
+                { sector: 'Setor B - Leste', prefix: 'B', startY: 65, isRight: true },
+                { sector: 'Setor C - Sul', prefix: 'C', startY: 460, isRight: false },
+                { sector: 'Setor D - Oeste', prefix: 'D', startY: 460, isRight: true }
             ]);
 
-            // Floor 2 Spots
             generateFloorSpots(2, [
-                { sector: 'Setor Norte Superior', prefix: 'E', startY: 65 },
-                { sector: 'Setor Leste Superior', prefix: 'F', startY: 65 },
-                { sector: 'Setor Sul Superior', prefix: 'G', startY: 460 },
-                { sector: 'Setor Oeste Superior', prefix: 'H', startY: 460 }
+                { sector: 'Setor E - Norte Sup', prefix: 'E', startY: 65, isRight: false },
+                { sector: 'Setor F - Leste Sup', prefix: 'F', startY: 65, isRight: true },
+                { sector: 'Setor G - Sul Sup', prefix: 'G', startY: 460, isRight: false },
+                { sector: 'Setor H - Oeste Sup', prefix: 'H', startY: 460, isRight: true }
             ]);
         }
 
         function generateFloorSpots(floorNum, sectors) {
-            sectors.forEach((sec, secIdx) => {
-                for (let i = 1; i <= 6; i++) {
+            sectors.forEach((sec) => {
+                for (let i = 1; i <= 5; i++) { // 5 Spots per sector to fit better
                     const code = `E${floorNum}-${sec.prefix}0${i}`;
                     let type = 'comum';
+                    
+                    // Assign Special spots
                     if (i === 1) type = 'pcd';
-                    else if (i === 6) type = 'eletrico';
+                    else if (i === 5) type = 'eletrico';
 
                     const isOccupied = Math.random() < 0.35;
-                    const isRightSide = (secIdx === 1 || secIdx === 3);
-                    const startX = isRightSide ? 530 : 50;
+                    const startX = sec.isRight ? 530 : 50;
 
                     spotsData.push({
                         id: code,
@@ -534,15 +582,66 @@
                         sector: sec.sector,
                         type: type,
                         status: isOccupied ? 'occupied' : 'free',
-                        x: startX + (i - 1) * 56,
+                        x: startX + (i - 1) * 64, // Increased spacing
                         y: sec.startY,
-                        width: 50,
-                        height: 95
+                        width: 55,
+                        height: 95,
+                        isTop: sec.startY < 200
                     });
                 }
             });
         }
 
+        /* --- Welcome / Check-in Logic --- */
+        function updateWelcomePrice() {
+            const slider = document.getElementById('welcome-time-slider');
+            const hours = parseInt(slider.value);
+            const total = hours * hourlyRate;
+            
+            document.getElementById('welcome-time-display').textContent = `${hours} ${hours === 1 ? 'Hora' : 'Horas'}`;
+            document.getElementById('welcome-price-display').textContent = `R$ ${total},00`;
+        }
+
+        function startSession() {
+            const plateInput = document.getElementById('plate-input').value.trim();
+            if (plateInput.length < 7) {
+                alert("Por favor, insira uma placa válida (Ex: ABC-1234).");
+                return;
+            }
+
+            userPlate = plateInput.toUpperCase();
+            userDurationHours = parseInt(document.getElementById('welcome-time-slider').value);
+            userPrefType = document.getElementById('type-select').value;
+
+            // Update Header
+            document.getElementById('header-plate-display').textContent = userPlate;
+            document.getElementById('header-time-display').textContent = `${userDurationHours}h`;
+
+            // Hide Modal
+            document.getElementById('welcome-modal').classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                document.getElementById('welcome-modal').classList.add('hidden');
+                showToast(`Bem-vindo, ${userPlate}! Buscando vagas...`, 'success');
+                
+                // Auto Search based on preference
+                renderSpots();
+                setTimeout(() => { autoSearchPreferredSpot(); }, 800);
+
+            }, 300);
+        }
+
+        function autoSearchPreferredSpot() {
+            const freeSpots = spotsData.filter(s => s.floor === currentFloor && s.status === 'free' && s.type === userPrefType);
+            if (freeSpots.length > 0) {
+                selectSpot(freeSpots[0].id);
+                showToast(`Vaga ${userPrefType.toUpperCase()} encontrada!`, 'success');
+            } else {
+                showToast(`Sem vagas do tipo ${userPrefType} neste andar. Exibindo outras.`, 'info');
+                quickReserveFreeSpot();
+            }
+        }
+
+        /* --- Main Logic --- */
         function renderSpots() {
             const group = document.getElementById('spots-group');
             group.innerHTML = '';
@@ -556,117 +655,147 @@
             currentSpots.forEach(spot => {
                 const opt = document.createElement('option');
                 opt.value = spot.id;
-                opt.textContent = `${spot.id} • ${spot.sector} (${spot.status === 'free' ? 'LIVRE' : 'OCUPADA'})`;
+                opt.textContent = `${spot.id} • ${spot.type.toUpperCase()} ${spot.status === 'free' ? '(LIVRE)' : '(OCUPADA)'}`;
                 if (spot.status === 'occupied') opt.disabled = true;
                 if (selectedSpotId === spot.id) opt.selected = true;
                 dropdown.appendChild(opt);
 
                 // SVG Group for Spot
                 const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                g.setAttribute('class', 'cursor-pointer transition duration-150 hover:opacity-90');
+                
+                // Styling based on status
+                if (spot.status === 'occupied') {
+                    g.setAttribute('class', 'cursor-not-allowed opacity-90');
+                } else {
+                    g.setAttribute('class', 'cursor-pointer transition duration-150 hover:opacity-80');
+                }
+                
                 g.setAttribute('onclick', `selectSpot('${spot.id}')`);
 
                 let rectFill = 'url(#spotFreeGrad)';
-                let strokeColor = '#10B981'; // Bright Green for Free Spot Lines
-                let ledColor = '#10B981';
+                let lineColor = '#FFFFFF'; 
+                let ledColor = '#10B981'; // Green
                 let ledClass = 'sensor-glow-free';
 
                 if (spot.status === 'occupied') {
-                    rectFill = 'url(#spotOccupiedGrad)';
-                    strokeColor = '#EF4444';
-                    ledColor = '#EF4444';
+                    rectFill = 'url(#diagonalHatch)';
+                    lineColor = '#475569';
+                    ledColor = '#EF4444'; // Red
                     ledClass = 'sensor-glow-occupied';
                 } else if (spot.type === 'pcd') {
-                    strokeColor = '#06B6D4';
+                    lineColor = '#06B6D4';
                     ledColor = '#06B6D4';
                     ledClass = 'sensor-glow-pcd';
                 } else if (spot.type === 'eletrico') {
-                    strokeColor = '#8B5CF6';
+                    lineColor = '#8B5CF6';
                     ledColor = '#8B5CF6';
                     ledClass = 'sensor-glow-eletrico';
                 }
 
                 const isSelected = (selectedSpotId === spot.id);
                 if (isSelected) {
-                    strokeColor = '#3B82F6';
+                    rectFill = '#1E40AF';
+                    lineColor = '#60A5FA';
                 }
 
-                // Parking Bay Base Box
+                // Parking Bay Floor Box
                 const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                 rect.setAttribute('x', spot.x);
                 rect.setAttribute('y', spot.y);
                 rect.setAttribute('width', spot.width);
                 rect.setAttribute('height', spot.height);
-                rect.setAttribute('rx', '8');
                 rect.setAttribute('fill', rectFill);
-                rect.setAttribute('stroke', isSelected ? '#FFFFFF' : strokeColor);
-                rect.setAttribute('stroke-width', isSelected ? '3.5' : '2');
                 g.appendChild(rect);
 
-                // Selection Highlight Pulse Outline
+                // Paint Parking Lines (U shape)
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                if (spot.isTop) {
+                    // Lines on left, right, top
+                    path.setAttribute('d', `M ${spot.x} ${spot.y+spot.height} L ${spot.x} ${spot.y} L ${spot.x+spot.width} ${spot.y} L ${spot.x+spot.width} ${spot.y+spot.height}`);
+                } else {
+                    // Lines on left, right, bottom
+                    path.setAttribute('d', `M ${spot.x} ${spot.y} L ${spot.x} ${spot.y+spot.height} L ${spot.x+spot.width} ${spot.y+spot.height} L ${spot.x+spot.width} ${spot.y}`);
+                }
+                path.setAttribute('fill', 'none');
+                path.setAttribute('stroke', lineColor);
+                path.setAttribute('stroke-width', '3');
+                g.appendChild(path);
+
+                // Selection Highlight Outline
                 if (isSelected) {
                     const selBox = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
                     selBox.setAttribute('x', spot.x - 3);
                     selBox.setAttribute('y', spot.y - 3);
                     selBox.setAttribute('width', spot.width + 6);
                     selBox.setAttribute('height', spot.height + 6);
-                    selBox.setAttribute('rx', '10');
+                    selBox.setAttribute('rx', '4');
                     selBox.setAttribute('fill', 'none');
-                    selBox.setAttribute('stroke', '#60A5FA');
-                    selBox.setAttribute('stroke-width', '2');
-                    selBox.setAttribute('stroke-dasharray', '4 4');
+                    selBox.setAttribute('stroke', '#3B82F6');
+                    selBox.setAttribute('stroke-width', '3');
+                    selBox.setAttribute('stroke-dasharray', '6 4');
                     g.appendChild(selBox);
                 }
 
+                // Internal Graphic (Text or Parked Car)
+                if (spot.status === 'occupied') {
+                    const useEl = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+                    useEl.setAttribute('href', '#parked-car-model');
+                    // Position car in middle of spot
+                    useEl.setAttribute('x', spot.x + (spot.width - 50)/2);
+                    useEl.setAttribute('y', spot.y);
+                    g.appendChild(useEl);
+                } else {
+                    // Free Spot Labels
+                    const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    labelText.setAttribute('x', spot.x + spot.width / 2);
+                    labelText.setAttribute('y', spot.y + 45);
+                    labelText.setAttribute('fill', '#FFFFFF');
+                    labelText.setAttribute('font-size', '14');
+                    labelText.setAttribute('font-weight', '900');
+                    labelText.setAttribute('text-anchor', 'middle');
+                    labelText.textContent = spot.id.split('-')[1];
+                    g.appendChild(labelText);
+
+                    if (spot.type === 'pcd') {
+                        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        icon.setAttribute('x', spot.x + spot.width / 2);
+                        icon.setAttribute('y', spot.y + 70);
+                        icon.setAttribute('font-size', '18');
+                        icon.setAttribute('text-anchor', 'middle');
+                        icon.textContent = '♿';
+                        g.appendChild(icon);
+                    } else if (spot.type === 'eletrico') {
+                        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        icon.setAttribute('x', spot.x + spot.width / 2);
+                        icon.setAttribute('y', spot.y + 70);
+                        icon.setAttribute('font-size', '18');
+                        icon.setAttribute('text-anchor', 'middle');
+                        icon.textContent = '⚡';
+                        g.appendChild(icon);
+                    } else {
+                        const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        lbl.setAttribute('x', spot.x + spot.width / 2);
+                        lbl.setAttribute('y', spot.y + 70);
+                        lbl.setAttribute('fill', '#6EE7B7');
+                        lbl.setAttribute('font-size', '9');
+                        lbl.setAttribute('font-weight', 'bold');
+                        lbl.setAttribute('text-anchor', 'middle');
+                        lbl.textContent = 'LIVRE';
+                        g.appendChild(lbl);
+                    }
+                }
+
                 // Overhead Ceiling LED Sensor
-                const sensorY = (spot.y < 200) ? spot.y + 14 : spot.y + spot.height - 14;
+                const sensorY = spot.isTop ? spot.y + 10 : spot.y + spot.height - 10;
                 const sensorCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 sensorCircle.setAttribute('cx', spot.x + spot.width / 2);
                 sensorCircle.setAttribute('cy', sensorY);
-                sensorCircle.setAttribute('r', '6');
+                sensorCircle.setAttribute('r', '7');
                 sensorCircle.setAttribute('fill', ledColor);
                 sensorCircle.setAttribute('stroke', '#FFFFFF');
                 sensorCircle.setAttribute('stroke-width', '1.5');
                 sensorCircle.setAttribute('class', ledClass);
                 g.appendChild(sensorCircle);
-
-                // Spot Label Badge
-                const labelText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                labelText.setAttribute('x', spot.x + spot.width / 2);
-                labelText.setAttribute('y', spot.y + (spot.y < 200 ? 44 : 50));
-                labelText.setAttribute('fill', '#FFFFFF');
-                labelText.setAttribute('font-size', '11');
-                labelText.setAttribute('font-weight', '900');
-                labelText.setAttribute('text-anchor', 'middle');
-                labelText.textContent = spot.id.split('-')[1];
-                g.appendChild(labelText);
-
-                // Type Icon / Parked Car Graphic
-                if (spot.status === 'occupied') {
-                    const carIcon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    carIcon.setAttribute('x', spot.x + spot.width / 2);
-                    carIcon.setAttribute('y', spot.y + (spot.y < 200 ? 70 : 76));
-                    carIcon.setAttribute('font-size', '18');
-                    carIcon.setAttribute('text-anchor', 'middle');
-                    carIcon.textContent = '🚘';
-                    g.appendChild(carIcon);
-                } else if (spot.type === 'pcd') {
-                    const pcdText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    pcdText.setAttribute('x', spot.x + spot.width / 2);
-                    pcdText.setAttribute('y', spot.y + (spot.y < 200 ? 70 : 76));
-                    pcdText.setAttribute('font-size', '14');
-                    pcdText.setAttribute('text-anchor', 'middle');
-                    pcdText.textContent = '♿';
-                    g.appendChild(pcdText);
-                } else if (spot.type === 'eletrico') {
-                    const evText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    evText.setAttribute('x', spot.x + spot.width / 2);
-                    evText.setAttribute('y', spot.y + (spot.y < 200 ? 70 : 76));
-                    evText.setAttribute('font-size', '14');
-                    evText.setAttribute('text-anchor', 'middle');
-                    evText.textContent = '⚡';
-                    g.appendChild(evText);
-                }
 
                 group.appendChild(g);
             });
@@ -680,22 +809,26 @@
 
             if (!spot) return null;
 
-            const isTop = spot.y < 200;
             const targetX = spot.x + spot.width / 2;
+            const isLeft = targetX < 450;
+            
+            // Entry point is at the bottom center of the vertical lane (x:450, y:580)
+            let d = `M 450 580 `;
 
-            let d = `M 80 580 L 80 415 L 450 415`;
-            if (isTop) {
-                d += ` L 450 205 L ${targetX} 205 L ${targetX} ${spot.y + spot.height}`;
+            if (spot.isTop) {
+                // Drive up central lane, then turn left/right at north horizontal lane
+                d += `L 450 205 L ${targetX} 205 L ${targetX} ${spot.y + spot.height}`;
             } else {
-                d += ` L ${targetX} 415 L ${targetX} ${spot.y}`;
+                // Drive up slightly, turn left/right at south horizontal lane
+                d += `L 450 415 L ${targetX} 415 L ${targetX} ${spot.y}`;
             }
 
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('id', 'active-route-path');
             path.setAttribute('d', d);
             path.setAttribute('fill', 'none');
-            path.setAttribute('stroke', '#60A5FA');
-            path.setAttribute('stroke-width', '5');
+            path.setAttribute('stroke', '#60A5FA'); // Blue route
+            path.setAttribute('stroke-width', '6');
             path.setAttribute('stroke-linecap', 'round');
             path.setAttribute('stroke-linejoin', 'round');
             path.setAttribute('class', 'animated-route-line');
@@ -710,18 +843,11 @@
         function startCarNavigationAnimation() {
             if (!selectedSpotId) return;
             const spot = spotsData.find(s => s.id === selectedSpotId);
-            if (spot.status === 'occupied') {
-                showToast('Esta vaga já está OCUPADA!', 'danger');
-                return;
-            }
+            if (!spot) return;
 
             activeNavigationSpot = spot;
-            const path = drawRouteToSpot(spot);
-            showToast(`Rota iniciada para ${spot.id}`, 'success');
-            
-            setTimeout(() => {
-                startCarAnimation();
-            }, 300);
+            drawRouteToSpot(spot);
+            showToast(`Rota gerada para a vaga ${spot.id}`, 'success');
         }
 
         function startCarAnimation() {
@@ -729,7 +855,11 @@
             const car = document.getElementById('animated-car');
             const btnDrive = document.getElementById('btn-drive-anim');
 
-            if (!path || !car || isCarAnimating) return;
+            if (!path) {
+                showToast('Gere a rota primeiro clicando em "Gerar Rota".', 'danger');
+                return;
+            }
+            if (isCarAnimating) return;
 
             isCarAnimating = true;
             car.classList.remove('hidden');
@@ -737,7 +867,7 @@
 
             const pathLength = path.getTotalLength();
             let start = null;
-            const duration = 3200; // 3.2 seconds drive animation
+            const duration = 3000; // 3 seconds drive animation
 
             function animate(timestamp) {
                 if (!start) start = timestamp;
@@ -748,7 +878,7 @@
                     const p1 = path.getPointAtLength(currentLen);
                     const p2 = path.getPointAtLength(Math.min(currentLen + 2, pathLength));
 
-                    // Calculate Angle
+                    // Calculate Angle of the car based on direction
                     const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI) + 90;
 
                     car.setAttribute('transform', `translate(${p1.x}, ${p1.y}) rotate(${angle})`);
@@ -760,26 +890,50 @@
                     isCarAnimating = false;
                     if (btnDrive) btnDrive.disabled = false;
 
-                    document.getElementById('nav-status-desc').textContent = '✅ Carro Estacionado com Sucesso!';
-                    showToast('Você chegou à sua vaga!', 'success');
+                    document.getElementById('nav-status-desc').textContent = '✅ Você chegou ao destino!';
+                    showToast('Veículo estacionado com sucesso!', 'success');
                 }
             }
 
             requestAnimationFrame(animate);
         }
 
-        function updatePricing() {
-            const slider = document.getElementById('time-slider');
-            selectedDurationHours = parseInt(slider.value);
-            
-            document.getElementById('duration-display').textContent = `${selectedDurationHours} ${selectedDurationHours === 1 ? 'Hora' : 'Horas'}`;
-            
-            const total = selectedDurationHours * hourlyRate;
-            document.getElementById('total-price-display').textContent = `R$ ${total},00`;
+        function selectSpot(spotId) {
+            if (!spotId) return;
+            const spot = spotsData.find(s => s.id === spotId);
+            if (!spot) return;
 
-            if (selectedSpotId) {
-                document.getElementById('spot-card-price-tag').textContent = `R$ ${total},00 (${selectedDurationHours}h)`;
+            // NEW: PREVENT SELECTION OF OCCUPIED SPOTS
+            if (spot.status === 'occupied') {
+                showToast('❌ Acesso Negado: Esta vaga já está ocupada!', 'danger');
+                document.getElementById('spot-dropdown').value = selectedSpotId || "";
+                return;
             }
+
+            selectedSpotId = spotId;
+            document.getElementById('spot-dropdown').value = spotId;
+
+            // Update UI Card
+            const card = document.getElementById('selected-spot-card');
+            document.getElementById('spot-card-code').textContent = spot.id;
+            document.getElementById('spot-card-sector').textContent = spot.sector;
+
+            let typeText = '<i class="fa-solid fa-car"></i> Vaga Comum';
+            if (spot.type === 'pcd') typeText = '<i class="fa-solid fa-wheelchair text-cyan-300"></i> Acessibilidade (PCD)';
+            if (spot.type === 'eletrico') typeText = '<i class="fa-solid fa-bolt text-violet-300"></i> Veículo Elétrico';
+            document.getElementById('spot-card-type').innerHTML = typeText;
+            
+            const total = userDurationHours * hourlyRate;
+            document.getElementById('spot-card-price-tag').textContent = `R$ ${total},00`;
+
+            card.classList.remove('hidden');
+            
+            // Clear route until user explicitly asks for it
+            document.getElementById('route-group').innerHTML = '';
+            document.getElementById('nav-guidance-panel').classList.add('hidden');
+            document.getElementById('animated-car').classList.add('hidden');
+            
+            renderSpots();
         }
 
         function quickReserveFreeSpot() {
@@ -789,50 +943,21 @@
                 return;
             }
             selectSpot(freeSpots[0].id);
-            showToast(`Vaga livre ${freeSpots[0].id} selecionada!`, 'success');
-        }
-
-        function selectSpot(spotId) {
-            if (!spotId) return;
-            selectedSpotId = spotId;
-            const spot = spotsData.find(s => s.id === spotId);
-            if (!spot) return;
-
-            const card = document.getElementById('selected-spot-card');
-            document.getElementById('spot-card-code').textContent = spot.id;
-            document.getElementById('spot-card-sector').textContent = spot.sector;
-
-            const badge = document.getElementById('spot-card-badge');
-            if (spot.status === 'free') {
-                badge.textContent = 'LIVRE';
-                badge.className = 'px-3 py-1 text-xs font-black rounded-lg bg-emerald-400 text-slate-950 shadow';
-            } else {
-                badge.textContent = 'OCUPADA';
-                badge.className = 'px-3 py-1 text-xs font-black rounded-lg bg-rose-500 text-white shadow';
-            }
-
-            let typeText = '<i class="fa-solid fa-car"></i> Vaga Padrão';
-            if (spot.type === 'pcd') typeText = '<i class="fa-solid fa-wheelchair text-cyan-300"></i> Vaga PCD';
-            if (spot.type === 'eletrico') typeText = '<i class="fa-solid fa-bolt text-violet-300"></i> Carro Elétrico';
-
-            document.getElementById('spot-card-type').innerHTML = typeText;
-            
-            const total = selectedDurationHours * hourlyRate;
-            document.getElementById('spot-card-price-tag').textContent = `R$ ${total},00 (${selectedDurationHours}h)`;
-
-            card.classList.remove('hidden');
-            renderSpots();
-            drawRouteToSpot(spot);
+            showToast(`Vaga ${freeSpots[0].id} selecionada automaticamente!`, 'info');
         }
 
         function renderNavSteps(spot) {
             const panel = document.getElementById('nav-guidance-panel');
             document.getElementById('nav-target-code').textContent = spot.id;
+            document.getElementById('nav-status-desc').textContent = 'Pronto para iniciar percurso';
+
+            const turnDir = spot.sector.includes('Leste') || spot.sector.includes('Oeste') ? 'à direita' : 'à esquerda';
 
             const steps = [
-                `Entre no Portal Principal do Piso E${spot.floor}`,
-                `Siga as setas iluminadas no piso até o corredor ${spot.sector.split('-')[0]}`,
-                `Estacione na Vaga ${spot.id} com sensor LED aceso no teto.`
+                `Entre pela Rampa Central (Piso E${spot.floor})`,
+                `Siga em frente no corredor principal`,
+                `Vire ${turnDir} no acesso do ${spot.sector.split('-')[0]}`,
+                `Estacione na vaga ${spot.id}. O sensor no teto ficará vermelho.`
             ];
 
             document.getElementById('nav-steps-container').innerHTML = steps.map((st, i) => `
@@ -868,8 +993,7 @@
                 b1.className = 'py-2 px-3 rounded-lg text-xs font-extrabold transition flex items-center justify-center gap-1.5 text-slate-600 hover:text-brand-700';
             }
 
-            renderSpots();
-            cancelNavigation();
+            resetView();
         }
 
         function simulateToggleSpot(spotId) {
@@ -878,9 +1002,12 @@
             if (!spot) return;
 
             spot.status = (spot.status === 'free') ? 'occupied' : 'free';
-            showToast(`Sensor Teto #${spot.id}: agora está ${spot.status === 'occupied' ? 'OCUPADA' : 'LIVRE'}`, 'info');
+            showToast(`Sensor IoT #${spot.id}: agora detecta vaga ${spot.status === 'occupied' ? 'OCUPADA' : 'LIVRE'}`, 'info');
 
-            selectSpot(spot.id);
+            // If it became occupied, unselect it
+            if (spot.status === 'occupied' && selectedSpotId === spot.id) {
+                resetView();
+            }
             renderSpots();
         }
 
@@ -891,11 +1018,15 @@
             if (isSimulating) {
                 btn.className = 'flex flex-col items-center gap-0.5 text-rose-600 font-extrabold text-[10px] animate-pulse';
                 simInterval = setInterval(() => {
-                    const idx = Math.floor(Math.random() * spotsData.length);
-                    spotsData[idx].status = spotsData[idx].status === 'free' ? 'occupied' : 'free';
-                    renderSpots();
-                }, 1800);
-                showToast('Simulação automática dos sensores ativada!', 'info');
+                    // Randomly toggle a spot that is NOT the currently selected one
+                    const availableToToggle = spotsData.filter(s => s.id !== selectedSpotId);
+                    if (availableToToggle.length > 0) {
+                        const idx = Math.floor(Math.random() * availableToToggle.length);
+                        availableToToggle[idx].status = availableToToggle[idx].status === 'free' ? 'occupied' : 'free';
+                        renderSpots();
+                    }
+                }, 2000);
+                showToast('Simulação ao vivo dos sensores IoT ativada.', 'info');
             } else {
                 clearInterval(simInterval);
                 btn.className = 'flex flex-col items-center gap-0.5 text-slate-500 hover:text-brand-600 font-extrabold text-[10px]';
@@ -915,6 +1046,7 @@
         function resetView() {
             cancelNavigation();
             selectedSpotId = null;
+            document.getElementById('spot-dropdown').value = "";
             document.getElementById('selected-spot-card').classList.add('hidden');
             renderSpots();
         }
@@ -923,11 +1055,12 @@
             if (!selectedSpotId) return;
 
             const spot = spotsData.find(s => s.id === selectedSpotId);
-            document.getElementById('ticket-spot-id').textContent = spot.id;
-            document.getElementById('ticket-floor').textContent = `Piso E${spot.floor}`;
-            document.getElementById('ticket-duration').textContent = `${selectedDurationHours} Horas`;
             
-            const total = selectedDurationHours * hourlyRate;
+            document.getElementById('ticket-plate').textContent = userPlate || "NÃO INFORMADA";
+            document.getElementById('ticket-spot-id').textContent = spot.id;
+            document.getElementById('ticket-duration').textContent = `${userDurationHours} Horas`;
+            
+            const total = userDurationHours * hourlyRate;
             document.getElementById('ticket-price').textContent = `R$ ${total},00`;
 
             drawSimulatedQRCode();
@@ -944,11 +1077,11 @@
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, 120, 120);
 
-            ctx.fillStyle = '#1E3A8A';
+            ctx.fillStyle = '#047857'; // Emerald color for QR
             const size = 8;
             for (let r = 0; r < 15; r++) {
                 for (let c = 0; c < 15; c++) {
-                    if (Math.random() > 0.35 || (r < 3 && c < 3) || (r < 3 && c > 11)) {
+                    if (Math.random() > 0.35 || (r < 3 && c < 3) || (r < 3 && c > 11) || (r > 11 && c < 3)) {
                         ctx.fillRect(c * size, r * size, size, size);
                     }
                 }
@@ -957,6 +1090,13 @@
 
         function closeTicketModal() {
             document.getElementById('ticket-modal').classList.add('hidden');
+            // Upon closing ticket, mark spot as occupied to simulate user parking
+            if (selectedSpotId) {
+                const spot = spotsData.find(s => s.id === selectedSpotId);
+                if (spot) spot.status = 'occupied';
+                showToast(`Check-in concluído! Vaga ${spot.id} ocupada.`, 'success');
+                resetView();
+            }
         }
 
         function toggleInfoModal() {
@@ -968,21 +1108,24 @@
             const toast = document.createElement('div');
 
             let bg = 'bg-brand-900 text-white';
-            if (type === 'success') bg = 'bg-emerald-600 text-white';
-            if (type === 'danger') bg = 'bg-rose-600 text-white';
+            let icon = 'fa-circle-info';
+            if (type === 'success') { bg = 'bg-emerald-600 text-white'; icon = 'fa-check-circle'; }
+            if (type === 'danger') { bg = 'bg-rose-600 text-white'; icon = 'fa-circle-xmark'; }
 
             toast.className = `p-3 rounded-xl ${bg} shadow-xl text-xs font-bold flex items-center gap-2 pointer-events-auto transition duration-300 border border-white/20`;
-            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
 
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         window.onload = function() {
             initSpotsData();
-            updatePricing();
-            renderSpots();
-            selectSpot('E1-A01');
+            updateWelcomePrice();
+            // Modal is shown by default via HTML classes
         };
     </script>
 </body>
